@@ -11,19 +11,19 @@ import java.util.List;
 public interface ReactionDao {
 
     // Get reactions of post
-    @Query("SELECT * FROM reaction WHERE 'post_id' = " + post.id)
-    List<Reaction> getReactions(Post post);
+    @Query("SELECT * FROM reaction WHERE 'post_id' = :post_id")
+    List<Reaction> getReactions(int post_id);
 
     // Delete reaction
     @Delete
     void delete(Reaction reaction);
 
     // Delete all reactions from post
-    @Query("DELETE FROM reaction WHERE 'post_id' = " + post.id)
-    boolean deleteReactions(Post post);
+    @Query("DELETE FROM reaction WHERE 'post_id' = :post_id")
+    boolean deleteReactions(int post_id);
 
     // Change reaction
-    @Query("UPDATE reaction SET 'type' = :type WHERE 'post_id' = " + reaction.post_id + " AND 'user_id' = " + reaction.user_id)
-    boolean updateReaction(Reaction reaction, int type);
+    @Query("UPDATE reaction SET 'type' = :type WHERE 'post_id' = :post_id AND 'user_id' = :user_id")
+    boolean updateReaction(int post_id, String user_id, int type);
 }
 

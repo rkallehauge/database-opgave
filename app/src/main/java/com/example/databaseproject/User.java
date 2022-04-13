@@ -12,4 +12,5 @@ public class User {
 
     @ColumnInfo(name = "full_name")
     public String full_name;
+
 }
