@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Database Project</string>
+
+    <string name="createTitle">Create user</string>
+    <string name="createIdInput">User ID</string>
+    <string name="createNameInput">Full name</string>
+    <string name="createUserButton">Create</string>
+    <string name="createTakenId">The ID is already in use</string>
 </resources>

@@ -5,18 +5,11 @@ import androidx.room.*;
 
 @Dao
 public interface UserDao {
-    @Query("SELECT * FROM user")
-    List<User> getAll();
 
-    @Query("SELECT * FROM user WHERE name IN (:userIds)")
-    List<User> loadAllByIds(String[] userIds);
+    @Query("SELECT id FROM User WHERE id = :userId")
+    String findUserById(String userId);
 
-    @Query("SELECT * FROM user WHERE name LIKE :name LIMIT 1")
-    User findByName(String name);
+    @Query("INSERT INTO User VALUES( :id,:user,:time)")
+    void insert(String id, String user,Long time);
 
-    @Insert
-    void insertAll(User... users);
-
-    @Delete
-    void delete(User user);
 }
