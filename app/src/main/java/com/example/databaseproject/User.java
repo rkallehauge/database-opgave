@@ -1,16 +1,16 @@
 package com.example.databaseproject;
 
+import androidx.annotation.NonNull;
 import androidx.room.*;
 
 @Entity
 public class User {
     @PrimaryKey
+    @NonNull
     public String name;
 
-    @ColumnInfo(name = "username")
     public String username;
 
-    @ColumnInfo(name = "full_name")
     public String full_name;
 
 }

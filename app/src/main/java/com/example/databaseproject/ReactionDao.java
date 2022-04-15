@@ -20,10 +20,10 @@ public interface ReactionDao {
 
     // Delete all reactions from post
     @Query("DELETE FROM reaction WHERE 'post_id' = :post_id")
-    boolean deleteReactions(int post_id);
+    int deleteReactions(int post_id);
 
     // Change reaction
     @Query("UPDATE reaction SET 'type' = :type WHERE 'post_id' = :post_id AND 'user_id' = :user_id")
-    boolean updateReaction(int post_id, String user_id, int type);
+    int updateReaction(int post_id, String user_id, int type);
 }
 
