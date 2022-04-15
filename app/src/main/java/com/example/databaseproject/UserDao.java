@@ -11,11 +11,11 @@ public interface UserDao {
     List<User> getAll();
 
     // Select all users by id.
-    @Query("SELECT * FROM user WHERE name IN (:userIds)")
+    @Query("SELECT * FROM user WHERE id IN (:userIds)")
     List<User> loadAllByIds(String[] userIds);
 
     // Select all users where name is...
-    @Query("SELECT * FROM user WHERE name LIKE :name LIMIT 1")
+    @Query("SELECT * FROM user WHERE id LIKE :name LIMIT 1")
     User findByName(String name);
 
     // Insert all users.

@@ -9,11 +9,9 @@ import java.sql.Timestamp;
 public class User {
     @PrimaryKey
     @NonNull
-    public String name;
+    public String id;
 
     public String username;
-
-    public String full_name;
 
     public long timestamp;
 }
