@@ -5,6 +5,7 @@ import androidx.room.*;
 
 @Dao
 public interface UserDao {
+<<<<<<< HEAD
 
     // Select all users.
     @Query("SELECT * FROM user")
@@ -25,4 +26,13 @@ public interface UserDao {
     // Delete user.
     @Delete
     void delete(User user);
+=======
+
+    @Query("SELECT id FROM User WHERE id = :userId")
+    String findUserById(String userId);
+
+    @Query("INSERT INTO User VALUES( :id,:user,:time)")
+    void insert(String id, String user,Long time);
+
+>>>>>>> origin/userCreation
 }
