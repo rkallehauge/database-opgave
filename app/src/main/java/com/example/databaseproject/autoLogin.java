@@ -17,6 +17,7 @@ public class autoLogin extends AppCompatActivity {
         SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
         String user_id = pref_userid.getString("user_id", null);
         if(user_id != null){
+            System.out.println("user_id" + user_id);
             /*
         new Thread(){
         AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").build();
@@ -30,8 +31,11 @@ public class autoLogin extends AppCompatActivity {
             System.out.println("Session successfully gotten");
             Intent intent = new Intent(this, postCreation.class);
             startActivity(intent);
+
+
         } else{
             // No session found, send user to user creation
+            System.out.println("Session NOT gotten");
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }
