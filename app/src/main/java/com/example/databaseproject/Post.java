@@ -1,7 +1,7 @@
 package com.example.databaseproject;
 import androidx.room.*;
 
-@Entity(foreignKeys = @ForeignKey(entity = User.class, parentColumns = "name", childColumns = "username"))
+@Entity(foreignKeys = @ForeignKey(entity = User.class, parentColumns = "id", childColumns = "username"))
 public class Post {
 
     @PrimaryKey

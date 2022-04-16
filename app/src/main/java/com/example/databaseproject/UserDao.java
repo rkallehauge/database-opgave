@@ -30,6 +30,6 @@ public interface UserDao {
     String findUserById(String userId);
 
     @Query("INSERT INTO User VALUES( :id,:user,:time)")
-    void insert(String id, String user,Long time);
+    void insert(String id, String user,String time);
 
 }
