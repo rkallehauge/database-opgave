@@ -5,11 +5,26 @@
     android:layout_height="match_parent"
     tools:context=".mainPage">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:text="@string/large_text" />
+    <LinearLayout
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:id="@+id/postContent"
+        android:orientation="vertical"
+        >
+
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center|bottom"
+            android:text="@string/createPost"
+            android:textColor="#ffffff"
+            android:id="@+id/postButton"
+
+            />
+
+    </LinearLayout>
 
 
 
