@@ -7,5 +7,7 @@
     <string name="createUserButton">Create</string>
     <string name="createTakenId">The ID is already in use</string>
     <string name="createPost">Post</string>
+    <string name="postHint">Message to be posted</string>
     <string name="loading">Loading</string>
+    <string name="placeholderText">Please input your message here</string>
 </resources>

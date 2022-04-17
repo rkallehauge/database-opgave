@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
         String takenUser = userDao.findUserById(id);
         if(takenUser == null) {
 
+            // TODO : Instead of handling user data in Session, we need to move this over to be handled by DB, atm i am too fucked to be assed to do this, so this will be done at a further date
             // get session
             SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
             // create session editor
