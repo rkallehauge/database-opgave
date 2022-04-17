@@ -6,4 +6,6 @@
     <string name="createNameInput">Full name</string>
     <string name="createUserButton">Create</string>
     <string name="createTakenId">The ID is already in use</string>
+    <string name="createPost">Post</string>
+    <string name="loading">Loading</string>
 </resources>

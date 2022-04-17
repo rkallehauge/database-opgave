@@ -33,12 +33,17 @@ public class MainActivity extends AppCompatActivity {
         UserDao userDao = db.UserDao();
         String takenUser = userDao.findUserById(id);
         if(takenUser == null) {
+
             // get session
             SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
             // create session editor
             Editor editor = pref_userid.edit();
             // put id into session
             editor.putString("user_id", id);
+            // git commit xd
+            editor.commit();
+
+
             String name = ((EditText) findViewById(R.id.userNameInput)).getText().toString();
             db.UserDao().insert(id,name, System.currentTimeMillis() / 1000L);
             finish();
