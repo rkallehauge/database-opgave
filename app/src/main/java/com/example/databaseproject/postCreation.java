@@ -57,16 +57,16 @@ public class postCreation extends AppCompatActivity {
 
     }
     // TODO : Find less scuffed way to handle text, possibly (hopefully ) through textInput
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void post(View view){
         new Thread(()->{
 
         String content = ((EditText) findViewById(R.id.userTextInput)).getText().toString();
 
-        SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
-        String user_id = pref_userid.getString("user_id", null);
+        SessionHandler sh = new SessionHandler(this,"user");
+        String user_id = sh.getString("user_id");
         String epoch = OffsetDateTime.now().toString();
-
 
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "User").fallbackToDestructiveMigration().build();

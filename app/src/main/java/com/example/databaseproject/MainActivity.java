@@ -20,6 +20,7 @@ import java.net.URLEncoder;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.se.omapi.Session;
 import android.util.Log;
 import android.view.View;
 
@@ -85,21 +86,30 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void tryInsert(View view) {
 
+        SessionHandler sh = new SessionHandler(this,"user");
+
         new Thread (() -> {
             try {
                 removeRemote("users",new JSONObject().put("id",""));
             } catch (JSONException e) {
                 e.printStackTrace();
+
             }
             updateFromRemote();
             String id = ((EditText) findViewById(R.id.userIdInput)).getText().toString();
         if(!isUsedId(id)) {
             String name = ((EditText) findViewById(R.id.userNameInput)).getText().toString();
             insertUser(id,name, OffsetDateTime.now().toString());
-
         }
-        else
+        else{
             ((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
+        }
+
+        sh.putData("user_id", id);
+
+        System.out.println("WhyDoYouNotWork");
+        finish();
+
 
         }).start();
     }

@@ -1,11 +1,8 @@
 package com.example.databaseproject;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
 
 import android.content.Intent;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 public class autoLogin extends AppCompatActivity {
@@ -15,40 +12,33 @@ public class autoLogin extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auto_login);
 
-        SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
-        String user_id = pref_userid.getString("user_id", null);
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        System.out.println("Testing for cancer");
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        SessionHandler sh = new SessionHandler(this,"user");
+        String user_id = sh.getString("user_id");
 
         if(user_id != null){
             System.out.println("user_id" + user_id);
-            /*
-        new Thread(){
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").build();
-        UserDao u = db.UserDao();
-
-
-
-
-        }.start();
-         */
-            // TODO : Return user to postCreation after user has been created
             System.out.println("Session successfully gotten");
             Intent intent = new Intent(this, postCreation.class);
-            finish();
             startActivity(intent);
-
 
         } else{
             // No session found, send user to user creation
             System.out.println("Session NOT gotten");
             Intent intent = new Intent(this, MainActivity.class);
-            finish();
             startActivity(intent);
         }
-    }
 
-    public void onResume(Bundle savedInstanceState){
-        System.out.println("Testing69420");
     }
 }
