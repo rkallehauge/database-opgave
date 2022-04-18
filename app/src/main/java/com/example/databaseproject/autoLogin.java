@@ -17,7 +17,6 @@ public class autoLogin extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        System.out.println("Testing for cancer");
     }
 
     @Override
