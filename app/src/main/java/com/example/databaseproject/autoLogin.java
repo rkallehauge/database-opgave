@@ -32,6 +32,7 @@ public class autoLogin extends AppCompatActivity {
 
         }.start();
          */
+            // TODO : Return user to postCreation after user has been created
             System.out.println("Session successfully gotten");
             Intent intent = new Intent(this, postCreation.class);
             finish();
