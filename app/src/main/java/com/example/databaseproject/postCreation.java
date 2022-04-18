@@ -1,7 +1,6 @@
 package com.example.databaseproject;
 
 import android.app.Fragment;
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 
@@ -9,28 +8,16 @@ import java.time.OffsetDateTime;
 
 import java.util.List;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.ActivityNotFoundException;
-
 import android.os.Build;
 import android.view.View;
-import android.view.ViewParent;
 
 import android.widget.EditText;
-import android.widget.GridLayout;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
-
-
-import org.w3c.dom.Text;
 
 public class postCreation extends AppCompatActivity {
 
@@ -77,8 +64,8 @@ public class postCreation extends AppCompatActivity {
 
         Post post = new Post(user_id,content,epoch);
         makePost(post);
-        new Thread(()->{
 
+        new Thread(()->{
 
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "User").fallbackToDestructiveMigration().build();
@@ -112,47 +99,13 @@ public class postCreation extends AppCompatActivity {
     }
 
     public void makePost(Post post){
+        // TODO : unfuck pls
+        feed_post fragment = new feed_post();
+        fragment.setText(post.user_id,post.content,post.stamp);
 
-        LinearLayout layout = findViewById(R.id.postCreation);
+        androidx.fragment.app.FragmentManager m = getSupportFragmentManager();
+        m.beginTransaction().add(R.id.postCreation, fragment).commit();
 
-        RelativeLayout rLayout = new RelativeLayout(this);
-
-        LinearLayout linLayout = new LinearLayout(this);
-        linLayout.setOrientation(LinearLayout.VERTICAL);
-
-
-
-        GridLayout g = new GridLayout(this);
-
-        g.setColumnCount(2);
-        g.setRowCount(1);
-
-        TextView user = new TextView(this);
-        user.setText(post.user_id);
-        g.addView(user);
-
-        TextView stamp = new TextView(this);
-        stamp.setText(post.stamp);
-        g.addView(stamp);
-
-        linLayout.addView(g);
-
-        TextView content = new TextView(this);
-        content.setText(post.content);
-
-        linLayout.addView(content);
-
-        LinearLayout.LayoutParams lLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lLayoutParams.setMargins(10,10,10,10);
-
-
-        rLayout.addView(linLayout, lLayoutParams);
-
-        RelativeLayout.LayoutParams rLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
-
-        // TODO : This doesnt really center each post in feed, fix at a further date
-        rLayoutParams.alignWithParent = true;
-        layout.addView(rLayout);
     }
 
 }
