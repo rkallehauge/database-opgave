@@ -11,7 +11,9 @@ public class User {
     @NonNull
     public String id;
 
-    public String username;
 
-    public long timestamp;
+    public String name;
+
+    public String timestamp;
+
 }
