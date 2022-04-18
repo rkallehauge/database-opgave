@@ -76,7 +76,7 @@ public class postCreation extends AppCompatActivity {
     }
 
     public void close(View view){
-
+        // TODO : When we try to do this, hell breaks loose, figure out why, and fix it
         //manager.beginTransaction().remove(this).commit();
     }
 
