@@ -1,12 +1,17 @@
 package com.example.databaseproject;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 
-import androidx.fragment.app.Fragment;
+import android.app.Fragment;
+
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.FragmentActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,6 +28,7 @@ public class textInput extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private FragmentActivity listener;
 
     public textInput() {
         // Required empty public constructor
@@ -62,12 +68,25 @@ public class textInput extends Fragment {
         return inflater.inflate(R.layout.fragment_text_input, container, false);
     }
     // closes modal
-    public void close(){
-        getActivity().finish();
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof Activity){
+            this.listener = (FragmentActivity) context;
+        }
     }
 
-    public void post(View view){
-
-
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        this.listener = null;
     }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+    // TODO : handle text shit in here
 }

@@ -5,29 +5,28 @@
     android:layout_height="match_parent"
     tools:context=".mainPage">
 
-    <LinearLayout
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:id="@+id/postContent"
-        android:orientation="vertical"
-        >
+        <LinearLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:id="@+id/postCreation"
+            android:orientation="vertical"
+            >
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="center|bottom"
+                android:text="@string/createPost"
+                android:textColor="#ffffff"
+                android:id="@+id/postButton"
+                android:onClick="createPost"
+                />
 
 
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_gravity="center|bottom"
-            android:text="@string/createPost"
-            android:textColor="#ffffff"
-            android:id="@+id/postButton"
-            android:onClick="createPost"
-            />
 
 
 
-    </LinearLayout>
-
+        </LinearLayout>
 
 
 </androidx.core.widget.NestedScrollView>

@@ -6,9 +6,10 @@ import androidx.room.*;
 @Dao
 public interface PostDao {
 
+
     // Insert all posts
     @Insert
-    void insertAll(Post... posts);
+    List<Long> insertAll(Post... posts);
 
     // Delete post
     @Delete

@@ -14,8 +14,12 @@ public class autoLogin extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auto_login);
+
         SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
         String user_id = pref_userid.getString("user_id", null);
+
+
+
         if(user_id != null){
             System.out.println("user_id" + user_id);
             /*
@@ -30,6 +34,7 @@ public class autoLogin extends AppCompatActivity {
          */
             System.out.println("Session successfully gotten");
             Intent intent = new Intent(this, postCreation.class);
+            finish();
             startActivity(intent);
 
 
@@ -37,7 +42,12 @@ public class autoLogin extends AppCompatActivity {
             // No session found, send user to user creation
             System.out.println("Session NOT gotten");
             Intent intent = new Intent(this, MainActivity.class);
+            finish();
             startActivity(intent);
         }
+    }
+
+    public void onResume(Bundle savedInstanceState){
+        System.out.println("Testing69420");
     }
 }

@@ -11,6 +11,8 @@ import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+
+
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
             String name = ((EditText) findViewById(R.id.userNameInput)).getText().toString();
             db.UserDao().insert(id,name, System.currentTimeMillis() / 1000L);
+            db.close();
             finish();
         }
         else

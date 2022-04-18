@@ -1,36 +1,93 @@
 package com.example.databaseproject;
 
+import android.app.Fragment;
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.os.Bundle;
-import android.view.View;
 
+import java.util.List;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.ActivityNotFoundException;
+
+import android.content.SharedPreferences;
+import android.view.View;
+import android.view.ViewParent;
+
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
+import androidx.room.Room;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link postCreation#newInstance} factory method to
- * create an instance of this fragment.
- */
+import org.w3c.dom.Text;
+
 public class postCreation extends AppCompatActivity {
 
-
+    FragmentManager manager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_creation);
+        List<Post> l  = getPosts();
+        LinearLayout layout = findViewById(R.id.postCreation);
+        for(Post post:l){
+            TextView t = new TextView(this);
+            t.setText(post.content);
+            layout.addView(t);
+        }
     }
 
-    public void createPost(){
-        FragmentManager manager = getFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        // TODO : fix
-        textInput t = new textInput();
+    public void createPost(View view){
 
-        transaction.add(R.id.postContent, t, "textInput");
+        manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        Fragment fragment = new textInput();
+        transaction.add(R.id.postCreation, fragment, "textInput");
+        transaction.commit();
+
+    }
+    // TODO : Find less scuffed way to handle text, possibly (hopefully ) through textInput
+    public void post(View view){
+        new Thread(()->{
+
+        String content = ((EditText) findViewById(R.id.userTextInput)).getText().toString();
+
+        SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
+        String user_id = pref_userid.getString("user_id", null);
+        int epoch = (int) (System.currentTimeMillis() / 1000L);
+
+
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "User").build();
+        PostDao postdao = db.PostDao();
+        Post post = new Post(user_id,content,epoch);
+
+        List<Long> result = postdao.insertAll(post);
+
+        System.out.println("post_id = " + result.get(0));
+
+        }).start();
+    }
+
+    public void close(View view){
+
+        //manager.beginTransaction().remove(this).commit();
+    }
+
+    public List<Post> getPosts(){
+        // TODO : better way of creating new elements than ad-hoc solution
+        // TODO : better way of handling db interaction than doing it on main thread, do it asynchronously
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "User").allowMainThreadQueries().build();
+        PostDao postdao = db.PostDao();
+        List<Post> posts = postdao.getAll();
+        return posts;
     }
 
 }
