@@ -49,6 +49,10 @@ public class postCreation extends AppCompatActivity {
 
     public void createPost(View view){
 
+        // Hide button for now
+        findViewById(R.id.postButton).setVisibility(View.GONE);
+
+
         manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         Fragment fragment = new textInput();
@@ -62,6 +66,11 @@ public class postCreation extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void post(View view){
+
+
+        // Show button again
+        findViewById(R.id.postButton).setVisibility(View.VISIBLE);
+
         SessionHandler sh = new SessionHandler(this,"user");
         String user_id = sh.getString("user_id");
 
@@ -77,11 +86,18 @@ public class postCreation extends AppCompatActivity {
 
         List<Long> result = postdao.insertAll(post);
         System.out.println("post_id = " + result.get(0));
+
+        // Remove fragment again
+        manager.popBackStack();
+
         }).start();
     }
 
     public void close(View view){
-        // TODO : When we try to do this, hell breaks loose, figure out why, and fix it
+
+        // Show button again
+        findViewById(R.id.postButton).setVisibility(View.VISIBLE);
+
         manager.popBackStack();
     }
 
