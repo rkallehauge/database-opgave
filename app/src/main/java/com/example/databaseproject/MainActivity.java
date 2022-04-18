@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
             UserDao userDao = db.UserDao();
             String takenUser = userDao.findUserById(id);
             if (takenUser == null) {
+
                 // get session
                 SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
                 // create session editor
@@ -106,8 +107,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         sh.putData("user_id", id);
-
-        System.out.println("WhyDoYouNotWork");
         finish();
 
 
