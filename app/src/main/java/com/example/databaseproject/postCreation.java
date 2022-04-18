@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 
+import java.time.OffsetDateTime;
+
 import java.util.List;
 
 import android.content.Context;
@@ -12,6 +14,7 @@ import android.content.Intent;
 import android.content.ActivityNotFoundException;
 
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewParent;
 
@@ -21,6 +24,7 @@ import android.widget.TextView;
 
 import android.os.Bundle;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
@@ -53,6 +57,7 @@ public class postCreation extends AppCompatActivity {
 
     }
     // TODO : Find less scuffed way to handle text, possibly (hopefully ) through textInput
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void post(View view){
         new Thread(()->{
 
@@ -60,11 +65,11 @@ public class postCreation extends AppCompatActivity {
 
         SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
         String user_id = pref_userid.getString("user_id", null);
-        int epoch = (int) (System.currentTimeMillis() / 1000L);
+        String epoch = OffsetDateTime.now().toString();
 
 
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "User").build();
+                AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         PostDao postdao = db.PostDao();
         Post post = new Post(user_id,content,epoch);
 
@@ -84,7 +89,7 @@ public class postCreation extends AppCompatActivity {
         // TODO : better way of creating new elements than ad-hoc solution
         // TODO : better way of handling db interaction than doing it on main thread, do it asynchronously
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "User").allowMainThreadQueries().build();
+                AppDatabase.class, "User").fallbackToDestructiveMigration().allowMainThreadQueries().build();
         PostDao postdao = db.PostDao();
         List<Post> posts = postdao.getAll();
         return posts;
