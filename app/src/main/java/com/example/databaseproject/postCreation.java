@@ -60,12 +60,12 @@ public class postCreation extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void post(View view){
-        new Thread(()->{
-
-        String content = ((EditText) findViewById(R.id.userTextInput)).getText().toString();
-
         SessionHandler sh = new SessionHandler(this,"user");
         String user_id = sh.getString("user_id");
+
+        new Thread(()->{
+        String content = ((EditText) findViewById(R.id.userTextInput)).getText().toString();
+
         String epoch = OffsetDateTime.now().toString();
 
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
@@ -74,9 +74,7 @@ public class postCreation extends AppCompatActivity {
         Post post = new Post(user_id,content,epoch);
 
         List<Long> result = postdao.insertAll(post);
-
         System.out.println("post_id = " + result.get(0));
-
         }).start();
     }
 
