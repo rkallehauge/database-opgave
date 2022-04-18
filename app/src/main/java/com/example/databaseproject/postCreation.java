@@ -18,7 +18,9 @@ import android.view.View;
 import android.view.ViewParent;
 
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import android.os.Bundle;
@@ -41,9 +43,44 @@ public class postCreation extends AppCompatActivity {
         List<Post> l  = getPosts();
         LinearLayout layout = findViewById(R.id.postCreation);
         for(Post post:l){
-            TextView t = new TextView(this);
-            t.setText(post.content);
-            layout.addView(t);
+            RelativeLayout rLayout = new RelativeLayout(this);
+
+            LinearLayout linLayout = new LinearLayout(this);
+            linLayout.setOrientation(LinearLayout.VERTICAL);
+
+
+
+            GridLayout g = new GridLayout(this);
+
+            g.setColumnCount(2);
+            g.setRowCount(1);
+
+            TextView user = new TextView(this);
+            user.setText(post.user_id);
+            g.addView(user);
+
+            TextView stamp = new TextView(this);
+            stamp.setText(post.stamp);
+            g.addView(stamp);
+
+            linLayout.addView(g);
+
+            TextView content = new TextView(this);
+            content.setText(post.content);
+
+            linLayout.addView(content);
+
+            LinearLayout.LayoutParams lLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lLayoutParams.setMargins(10,10,10,10);
+
+
+            rLayout.addView(linLayout, lLayoutParams);
+
+            RelativeLayout.LayoutParams rLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+            // TODO : This doesnt really center each post in feed, fix at a further date
+            rLayoutParams.alignWithParent = true;
+            layout.addView(rLayout);
         }
     }
 
