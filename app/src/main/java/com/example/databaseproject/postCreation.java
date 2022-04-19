@@ -7,6 +7,8 @@ import android.app.FragmentTransaction;
 import java.time.OffsetDateTime;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import android.os.Build;
 import android.view.View;
@@ -24,8 +26,11 @@ public class postCreation extends AppCompatActivity {
     // For interacting with fragment types, literal fragments
     FragmentManager manager;
 
+
     // for interacting with descendants of fragment, e.g feed_post
     androidx.fragment.app.FragmentManager sManager;
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -92,11 +97,22 @@ public class postCreation extends AppCompatActivity {
         manager.popBackStack();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public List<Post> getPosts(){
-        // TODO : better way of handling db interaction than doing it on main thread, do it asynchronously
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "User").fallbackToDestructiveMigration().allowMainThreadQueries().build();
-        return db.PostDao().getAll();
+
+                AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+        PostDao postdao = db.PostDao();
+        CompletableFuture<List<Post>> posts = CompletableFuture.supplyAsync(postdao::getAll);
+        try {
+            return posts.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+
     }
 
     public void makePost(Post post){
