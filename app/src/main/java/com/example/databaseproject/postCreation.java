@@ -25,6 +25,7 @@ public class postCreation extends AppCompatActivity {
 
     FragmentManager manager;
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,7 +99,7 @@ public class postCreation extends AppCompatActivity {
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         PostDao postdao = db.PostDao();
-        CompletableFuture<List<Post>> posts = CompletableFuture.supplyAsync(() -> postdao.getAll());
+        CompletableFuture<List<Post>> posts = CompletableFuture.supplyAsync(postdao::getAll);
         try {
             return posts.get();
         } catch (ExecutionException e) {
