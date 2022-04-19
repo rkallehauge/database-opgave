@@ -35,8 +35,9 @@ public class postCreation extends AppCompatActivity {
 
     public void createPost(View view){
 
-        // Hide button for now
+        // Hide button and feed for now
         findViewById(R.id.postButton).setVisibility(View.GONE);
+        findViewById(R.id.postFeed).setVisibility(View.GONE);
 
 
         manager = getFragmentManager();
@@ -56,6 +57,7 @@ public class postCreation extends AppCompatActivity {
 
         // Show button again
         findViewById(R.id.postButton).setVisibility(View.VISIBLE);
+        findViewById(R.id.postFeed).setVisibility(View.VISIBLE);
 
         SessionHandler sh = new SessionHandler(this,"user");
         String user_id = sh.getString("user_id");
@@ -84,6 +86,7 @@ public class postCreation extends AppCompatActivity {
 
         // Show button again
         findViewById(R.id.postButton).setVisibility(View.VISIBLE);
+        findViewById(R.id.postFeed).setVisibility(View.VISIBLE);
 
         manager.popBackStack();
     }
@@ -104,7 +107,7 @@ public class postCreation extends AppCompatActivity {
         androidx.fragment.app.FragmentManager m = getSupportFragmentManager();
 
         // TODO : sometimes this crashes the app, unsure as to why atm
-        m.beginTransaction().add(R.id.postCreation, fragment).commit();
+        m.beginTransaction().add(R.id.postFeed, fragment).commit();
 
     }
 
