@@ -21,11 +21,18 @@ import androidx.room.Room;
 
 public class postCreation extends AppCompatActivity {
 
+    // For interacting with fragment types, literal fragments
     FragmentManager manager;
+
+    // for interacting with descendants of fragment, e.g feed_post
+    androidx.fragment.app.FragmentManager sManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        manager = getFragmentManager();
+        sManager = getSupportFragmentManager();
         setContentView(R.layout.activity_post_creation);
         List<Post> l  = getPosts();
         for(Post post:l){
@@ -36,11 +43,9 @@ public class postCreation extends AppCompatActivity {
     public void createPost(View view){
 
         // Hide button and feed for now
-        findViewById(R.id.postButton).setVisibility(View.GONE);
-        findViewById(R.id.postFeed).setVisibility(View.GONE);
+        hideFeed();
 
 
-        manager = getFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
         Fragment fragment = new textInput();
 
@@ -56,8 +61,7 @@ public class postCreation extends AppCompatActivity {
 
 
         // Show button again
-        findViewById(R.id.postButton).setVisibility(View.VISIBLE);
-        findViewById(R.id.postFeed).setVisibility(View.VISIBLE);
+        showFeed();
 
         SessionHandler sh = new SessionHandler(this,"user");
         String user_id = sh.getString("user_id");
@@ -84,10 +88,7 @@ public class postCreation extends AppCompatActivity {
 
     public void close(View view){
 
-        // Show button again
-        findViewById(R.id.postButton).setVisibility(View.VISIBLE);
-        findViewById(R.id.postFeed).setVisibility(View.VISIBLE);
-
+        showFeed();
         manager.popBackStack();
     }
 
@@ -95,20 +96,31 @@ public class postCreation extends AppCompatActivity {
         // TODO : better way of handling db interaction than doing it on main thread, do it asynchronously
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "User").fallbackToDestructiveMigration().allowMainThreadQueries().build();
-        PostDao postdao = db.PostDao();
-        List<Post> posts = postdao.getAll();
-        return posts;
+        return db.PostDao().getAll();
     }
 
     public void makePost(Post post){
         // TODO : unfuck pls
         feed_post fragment = feed_post.newInstance(post);
 
-        androidx.fragment.app.FragmentManager m = getSupportFragmentManager();
-
         // TODO : sometimes this crashes the app, unsure as to why atm
-        m.beginTransaction().add(R.id.postFeed, fragment).commit();
+        sManager.beginTransaction().add(R.id.postFeed, fragment).commit();
 
     }
+    // TODO : Perhaps handle this in post_post, not sure how to do that atm, other than propagating method call from here
+    public void react(View view){
+        System.out.println(view.getId());
+    }
 
+    public void hideFeed(){
+        // Show button again
+        findViewById(R.id.postButton).setVisibility(View.GONE);
+        findViewById(R.id.postFeed).setVisibility(View.GONE);
+    }
+
+    public void showFeed(){
+        // Show button again
+        findViewById(R.id.postButton).setVisibility(View.VISIBLE);
+        findViewById(R.id.postFeed).setVisibility(View.VISIBLE);
+    }
 }

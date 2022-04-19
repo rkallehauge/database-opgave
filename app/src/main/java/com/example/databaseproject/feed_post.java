@@ -3,10 +3,14 @@ package com.example.databaseproject;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
+import android.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 /**
@@ -16,16 +20,16 @@ import android.widget.TextView;
  */
 public class feed_post extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_USERID  = "param1";
     private static final String ARG_CONTENT = "param2";
     private static final String ARG_STAMP   = "param3";
+    private static final String ARG_ID      = "param4";
 
-    // TODO: Rename and change types of parameters
     private String user_id;
     private String content;
     private String stamp;
+    private Integer id;
 
     public feed_post() {
         // Required empty public constructor
@@ -42,6 +46,7 @@ public class feed_post extends Fragment {
         args.putString(ARG_USERID, post.user_id);
         args.putString(ARG_CONTENT, post.content);
         args.putString(ARG_STAMP, post.stamp);
+        args.putInt(ARG_ID, post.id);
 
         fragment.setArguments(args);
 
@@ -60,6 +65,7 @@ public class feed_post extends Fragment {
         // Semi fix
         View view = inflater.inflate(R.layout.fragment_feed_post, container, false);
 
+
         return view;
 
     }
@@ -67,9 +73,10 @@ public class feed_post extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        // TODO : Moved this out of the if-statement, not sure if the app crashes if getArguments() returns null, we'll see
+            Bundle args = getArguments();
 
         if(getArguments() != null){
-            Bundle args = getArguments();
             String uid, creator, stamp;
 
             uid = args.getString(ARG_USERID);
@@ -86,5 +93,14 @@ public class feed_post extends Fragment {
             stampText.setText(stamp);
 
         }
+
+        Button button = (Button) getView().findViewById(R.id.postReact);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view){
+                int post_id = args.getInt(ARG_ID);
+                RelativeLayout rLayout = getView().findViewById(R.id.postContainer);
+                // TODO : reactions are gonna be here
+            }
+        });
     }
 }
