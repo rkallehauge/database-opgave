@@ -32,14 +32,16 @@ public class feed_post extends Fragment {
     }
 
 
-    public static feed_post newInstance(String userid, String content, String stamp) {
+    public static feed_post newInstance(Post post) {
+
+
 
         feed_post fragment = new feed_post();
         Bundle args = new Bundle();
 
-        args.putString(ARG_USERID, userid);
-        args.putString(ARG_CONTENT, content);
-        args.putString(ARG_STAMP, stamp);
+        args.putString(ARG_USERID, post.user_id);
+        args.putString(ARG_CONTENT, post.content);
+        args.putString(ARG_STAMP, post.stamp);
 
         fragment.setArguments(args);
 
@@ -55,18 +57,34 @@ public class feed_post extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Semi fix
+        View view = inflater.inflate(R.layout.fragment_feed_post, container, false);
 
-        return inflater.inflate(R.layout.fragment_feed_post, container, false);
+        return view;
+
     }
 
-    public void setText(String userid, String content, String stamp){
-        TextView uidText = (TextView) getView().findViewById(R.id.postCreator);
-        uidText.setText(userid);
+    @Override
+    public void onStart() {
+        super.onStart();
 
-        TextView contentText = (TextView) getView().findViewById(R.id.postContent);
-        contentText.setText(content);
+        if(getArguments() != null){
+            Bundle args = getArguments();
+            String uid, creator, stamp;
 
-        TextView stampText = (TextView) getView().findViewById(R.id.postStamp);
-        stampText.setText(stamp);
+            uid = args.getString(ARG_USERID);
+            content = args.getString(ARG_CONTENT);
+            stamp = args.getString(ARG_STAMP);
+
+            TextView uidText = getView().findViewById(R.id.postCreator);
+            uidText.setText(uid);
+
+            TextView contentText = getView().findViewById(R.id.postContent);
+            contentText.setText(content);
+
+            TextView stampText = getView().findViewById(R.id.postStamp);
+            stampText.setText(stamp);
+
+        }
     }
 }

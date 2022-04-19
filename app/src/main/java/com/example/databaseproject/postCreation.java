@@ -89,7 +89,6 @@ public class postCreation extends AppCompatActivity {
     }
 
     public List<Post> getPosts(){
-        // TODO : better way of creating new elements than ad-hoc solution
         // TODO : better way of handling db interaction than doing it on main thread, do it asynchronously
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "User").fallbackToDestructiveMigration().allowMainThreadQueries().build();
@@ -100,10 +99,11 @@ public class postCreation extends AppCompatActivity {
 
     public void makePost(Post post){
         // TODO : unfuck pls
-        feed_post fragment = new feed_post();
-        fragment.setText(post.user_id,post.content,post.stamp);
+        feed_post fragment = feed_post.newInstance(post);
 
         androidx.fragment.app.FragmentManager m = getSupportFragmentManager();
+
+        // TODO : sometimes this crashes the app, unsure as to why atm
         m.beginTransaction().add(R.id.postCreation, fragment).commit();
 
     }
