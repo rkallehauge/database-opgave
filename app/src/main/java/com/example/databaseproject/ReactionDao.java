@@ -17,19 +17,23 @@ public interface ReactionDao {
     void insert(int post_id, String user_id, String stamp, int type);
 
     // Get reactions of post
-    @Query("SELECT * FROM reaction WHERE 'post_id' = :post_id")
+    @Query("SELECT * FROM Reaction WHERE 'post_id' = :post_id")
     List<Reaction> getReactions(int post_id);
 
+    @Query("SELECT * FROM Reaction WHERE 'post_id' = :post_id AND 'user_id' = :user_id")
+    List<Reaction> getReactionById(int post_id, String user_id);
+
+    // TODO : make userid and postid get
     // Delete reaction
     @Delete
     void delete(Reaction reaction);
 
     // Delete all reactions from post
-    @Query("DELETE FROM reaction WHERE 'post_id' = :post_id")
+    @Query("DELETE FROM Reaction WHERE 'post_id' = :post_id")
     int deleteReactions(int post_id);
 
     // Change reaction
-    @Query("UPDATE reaction SET 'type' = :type WHERE 'post_id' = :post_id AND 'user_id' = :user_id")
+    @Query("UPDATE Reaction SET 'type' = :type WHERE 'post_id' = :post_id AND 'user_id' = :user_id")
     int updateReaction(int post_id, String user_id, int type);
 }
 

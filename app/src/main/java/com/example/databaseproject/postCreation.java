@@ -163,13 +163,28 @@ public class postCreation extends AppCompatActivity {
         reaction.user_id = user_id;
         reaction.type = type;
         reaction.stamp = stamp;
+        /*
+            TODO : This works, but can sometimes crash the app after a clean wipe of DB,
+             it can possibly not actually be a crash, but the Layout reloads as if it were a crash
+         */
+        int dbReturn = reactiondao.getReactionById(post_id,user_id).size();
+        System.out.println(dbReturn);
+            // No current reaction exists on this post by this user
+        System.out.println(user_id + " " + post_id);
 
-        // TODO : This is still fucked, something about
+        System.out.println(reactiondao.getReactionById(1,"test"));
 
-        reactiondao.insertReactions(reaction);
+
+        if(dbReturn != 0){
+            System.out.println("Existing reaction updated");
+            reactiondao.updateReaction(post_id,user_id,type);
+        // Update reac
+        } else{
+            System.out.println("New reaction posted");
+            reactiondao.insertReactions(reaction);
+        }
+
         db.close();
-
-        System.out.println("Reaction posted");
 
         }).start();
     }
