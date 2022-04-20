@@ -20,7 +20,6 @@ import java.net.URLEncoder;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.se.omapi.Session;
 import android.util.Log;
 import android.view.View;
 
@@ -106,7 +105,7 @@ public class createUser extends AppCompatActivity {
             ((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
         }
 
-        sh.putData("user_id", id);
+        sh.putString("user_id", id);
         finish();
 
 

@@ -153,18 +153,24 @@ public class postCreation extends AppCompatActivity {
         System.out.println("Reaction attempt");
         // TODO : make in thread
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-        AppDatabase.class, "User").fallbackToDestructiveMigration().allowMainThreadQueries().build();
+        AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         ReactionDao reactiondao = db.ReactionDao();
         String stamp = OffsetDateTime.now().toString();
-        System.out.println("post_id:"+post_id+" type:"+type+" user_id:" +user_id+" stamp:"+stamp);
+        new Thread(()->{
 
         Reaction reaction = new Reaction();
         reaction.post_id = post_id;
         reaction.user_id = user_id;
         reaction.type = type;
         reaction.stamp = stamp;
+
         // TODO : This is still fucked, something about
+
         reactiondao.insertReactions(reaction);
         db.close();
+
+        System.out.println("Reaction posted");
+
+        }).start();
     }
 }

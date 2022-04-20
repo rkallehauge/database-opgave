@@ -71,7 +71,7 @@
                 android:text="React"
             />
                 <!--
-                reaction image size is 64px~ square
+                reaction image size is 48px~ square
 
                 TODO : make current reaction highlighted on load
                 -->
