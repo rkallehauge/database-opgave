@@ -21,6 +21,5 @@ public class Reaction {
     public String user_id;
 
     public int type;
-    public Integer stamp;
-
+    public String stamp;
 }

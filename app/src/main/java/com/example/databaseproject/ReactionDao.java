@@ -10,6 +10,12 @@ import java.util.List;
 @Dao
 public interface ReactionDao {
 
+    @Insert
+    void insertReactions(Reaction... reactions);
+
+    @Query("INSERT INTO Reaction (post_id, user_id, stamp, type) VALUES( :post_id,:user_id,:stamp,:type)")
+    void insert(int post_id, String user_id, String stamp, int type);
+
     // Get reactions of post
     @Query("SELECT * FROM reaction WHERE 'post_id' = :post_id")
     List<Reaction> getReactions(int post_id);

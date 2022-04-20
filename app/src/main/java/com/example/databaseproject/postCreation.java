@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import android.os.Build;
 import android.view.View;
 
+import android.view.ViewGroup;
 import android.widget.EditText;
 
 import android.os.Bundle;
@@ -36,8 +37,15 @@ public class postCreation extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+        // Fragment fragment
         manager = getFragmentManager();
+
+        // feed_post
+        // post_reaction
         sManager = getSupportFragmentManager();
+
+
         setContentView(R.layout.activity_post_creation);
         List<Post> l  = getPosts();
         for(Post post:l){
@@ -138,5 +146,25 @@ public class postCreation extends AppCompatActivity {
         // Show button again
         findViewById(R.id.postButton).setVisibility(View.VISIBLE);
         findViewById(R.id.postFeed).setVisibility(View.VISIBLE);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void makeReaction(int post_id, int type, String user_id){
+        System.out.println("Reaction attempt");
+        // TODO : make in thread
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+        AppDatabase.class, "User").fallbackToDestructiveMigration().allowMainThreadQueries().build();
+        ReactionDao reactiondao = db.ReactionDao();
+        String stamp = OffsetDateTime.now().toString();
+        System.out.println("post_id:"+post_id+" type:"+type+" user_id:" +user_id+" stamp:"+stamp);
+
+        Reaction reaction = new Reaction();
+        reaction.post_id = post_id;
+        reaction.user_id = user_id;
+        reaction.type = type;
+        reaction.stamp = stamp;
+        // TODO : This is still fucked, something about
+        reactiondao.insertReactions(reaction);
+        db.close();
     }
 }

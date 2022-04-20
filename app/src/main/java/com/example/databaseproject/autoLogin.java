@@ -35,7 +35,7 @@ public class autoLogin extends AppCompatActivity {
         } else{
             // No session found, send user to user creation
             System.out.println("Session NOT gotten");
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent = new Intent(this, createUser.class);
             startActivity(intent);
         }
 

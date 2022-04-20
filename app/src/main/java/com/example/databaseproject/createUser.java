@@ -41,7 +41,7 @@ import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Scanner;
 
-public class MainActivity extends AppCompatActivity {
+public class createUser extends AppCompatActivity {
 
     private static final String REMOTE_AUTH_KEY = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBwMjAyMiJ9.iEPYaqBPWoAxc7iyi507U3sexbkLHRKABQgYNDG4Awk";
 
