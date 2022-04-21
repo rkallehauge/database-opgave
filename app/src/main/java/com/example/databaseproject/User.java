@@ -11,9 +11,17 @@ public class User {
     @NonNull
     public String id;
 
-
     public String name;
 
     public String timestamp;
+
+    public User(){
+    }
+
+    public User(String id, String name, String timestamp) {
+        this.id = id;
+        this.name = name;
+        this.timestamp = timestamp;
+    }
 
 }

@@ -23,5 +23,12 @@ public class Post {
         this.stamp = stamp;
     }
 
+    public Post(int id, String user_id, String content, String stamp){
+        this.id = id;
+        this.user_id = user_id;
+        this.content = content;
+        this.stamp = stamp;
+    }
+
 
 }

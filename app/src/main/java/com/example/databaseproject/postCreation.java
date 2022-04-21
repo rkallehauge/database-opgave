@@ -6,11 +6,13 @@ import android.app.FragmentTransaction;
 
 import java.time.OffsetDateTime;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import android.os.Build;
+import android.util.Log;
 import android.view.View;
 
 import android.view.ViewGroup;
@@ -22,6 +24,10 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class postCreation extends AppCompatActivity {
 
     // For interacting with fragment types, literal fragments
@@ -31,8 +37,8 @@ public class postCreation extends AppCompatActivity {
     // for interacting with descendants of fragment, e.g feed_post
     androidx.fragment.app.FragmentManager sManager;
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,12 +53,47 @@ public class postCreation extends AppCompatActivity {
 
 
         setContentView(R.layout.activity_post_creation);
+
+        new Thread(() -> createPostFromRemote()).start();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void createPostFromRemote() {
+        JSONArray remoteUsers = remote.updateFromRemote("users");
+        for(int i = 0; i < remoteUsers.length(); i++) {
+            try {
+                JSONObject entry = remoteUsers.getJSONObject(i);
+                AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+                db.UserDao().insert(new User(entry.getString("id"), entry.getString("name"),entry.getString("stamp")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        JSONArray remotePosts = remote.updateFromRemote("posts");
+        List<Post> postList = new ArrayList<>();
+        for(int i = 0; i < remotePosts.length(); i++) {
+            try {
+                JSONObject entry = remotePosts.getJSONObject(i);
+                postList.add(new Post(entry.getInt("id"),entry.getString("user_id"),entry.getString("content"),entry.getString("stamp")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        //Post test = new Post(999,"FourthUser","Benzin priserne er for billige","2022-04-21T18:22:07.169+02:00");
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+        PostDao postdao = db.PostDao();
+        for(Post p: postList) {
+            Log.d("TEST",p.id + " " + p.user_id + " " + p.content + " " + p.stamp);
+            postdao.insertAll(p);
+        }
+
         List<Post> l  = getPosts();
         for(Post post:l){
             makePost(post);
         }
     }
-
     public void createPost(View view){
 
         // Hide button and feed for now
@@ -71,7 +112,6 @@ public class postCreation extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void post(View view){
-
 
         // Show button again
         showFeed();
@@ -93,6 +133,17 @@ public class postCreation extends AppCompatActivity {
         List<Long> result = postdao.insertAll(post);
         System.out.println("post_id = " + result.get(0));
 
+        JSONObject jsonPost = new JSONObject();
+            try {
+                jsonPost.put("id",result.get(0));
+                jsonPost.put("user_id", user_id);
+                jsonPost.put("content",content);
+                jsonPost.put("stamp",epoch);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        remote.insertRemote("posts",jsonPost);
+
         // Remove fragment again
         manager.popBackStack();
 
@@ -107,19 +158,13 @@ public class postCreation extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public List<Post> getPosts(){
+
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
 
                 AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         PostDao postdao = db.PostDao();
-        CompletableFuture<List<Post>> posts = CompletableFuture.supplyAsync(postdao::getAll);
-        try {
-            return posts.get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return null;
+        List<Post> posts = postdao.getAll();
+        return posts;
 
     }
 
