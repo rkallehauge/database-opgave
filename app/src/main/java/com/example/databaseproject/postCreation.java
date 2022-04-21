@@ -82,7 +82,6 @@ public class postCreation extends AppCompatActivity {
         String epoch = OffsetDateTime.now().toString();
 
         Post post = new Post(user_id,content,epoch);
-        makePost(post);
 
         new Thread(()->{
 
@@ -92,6 +91,9 @@ public class postCreation extends AppCompatActivity {
 
         List<Long> result = postdao.insertAll(post);
         System.out.println("post_id = " + result.get(0));
+        post.id = result.get(0).intValue();
+
+        makePost(post);
 
         // Remove fragment again
         manager.popBackStack();
@@ -119,13 +121,18 @@ public class postCreation extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println(" all has gone to hell ");
         return null;
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void makePost(Post post){
         // TODO : unfuck pls
-        feed_post fragment = feed_post.newInstance(post);
+        List<Reaction> reactions = getReactions(post);
+        System.out.println(reactions);
+
+        feed_post fragment = feed_post.newInstance(post, reactions);
 
         // TODO : sometimes this crashes the app, unsure as to why atm
         sManager.beginTransaction().add(R.id.postFeed, fragment).commit();
@@ -167,12 +174,10 @@ public class postCreation extends AppCompatActivity {
             TODO : This works, but can sometimes crash the app after a clean wipe of DB,
              it can possibly not actually be a crash, but the Layout reloads as if it were a crash
          */
-        int dbReturn = reactiondao.getReactionById(post_id,user_id).size();
+        int dbReturn = reactiondao.getReactionById(post_id,user_id);
         System.out.println(dbReturn);
             // No current reaction exists on this post by this user
-        System.out.println(user_id + " " + post_id);
-
-        System.out.println(reactiondao.getReactionById(1,"test"));
+        System.out.println("post_id : " + post_id + " user_id: "+ user_id);
 
 
         if(dbReturn != 0){
@@ -187,5 +192,22 @@ public class postCreation extends AppCompatActivity {
         db.close();
 
         }).start();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public List<Reaction> getReactions(Post post){
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+        AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+        ReactionDao reactiondao = db.ReactionDao();
+        // hopefully this shitcode works
+        CompletableFuture<List<Reaction>> reactions = CompletableFuture.supplyAsync(() -> reactiondao.getReactions(post.id));
+        try{
+            return reactions.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

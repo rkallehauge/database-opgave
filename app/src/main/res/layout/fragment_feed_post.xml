@@ -75,28 +75,63 @@
 
                 TODO : make current reaction highlighted on load
                 -->
-                <ImageButton
-                    android:visibility="gone"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_pog"
-                    android:tag="@+tag/reactionButton"
-                />
-                <ImageButton
-                    android:visibility="gone"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_cringe"
-                    android:tag="@+tag/reactionButton"
-                />
-                <ImageButton
-                    android:visibility="invisible"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_pog"
-                    android:tag="@+tag/reactionButton"
-                />
 
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        >
+                        <ImageButton
+
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_pog"
+                            android:tag="@+tag/reactionButton"
+                        />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:tag="@+tag/reactionCount"
+                        />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        >
+                        <ImageButton
+
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_cringe"
+                            android:tag="@+tag/reactionButton"
+                            />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:tag="@+tag/reactionCount"
+                            />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        >
+                        <ImageButton
+
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_indifferent"
+                            android:tag="@+tag/reactionButton"
+                            />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:tag="@+tag/reactionCount"
+                            />
+                    </LinearLayout>
 
 
             </LinearLayout>

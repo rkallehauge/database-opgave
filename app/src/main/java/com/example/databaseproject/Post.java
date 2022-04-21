@@ -23,5 +23,12 @@ public class Post {
         this.stamp = stamp;
     }
 
+    // Initialize existing post with id
+    public Post(int id, String user_id, String content, String stamp){
+        this.user_id = user_id;
+        this.content = content;
+        this.stamp = stamp;
+    }
+
 
 }

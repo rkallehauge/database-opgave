@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.List;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link feed_post#newInstance} factory method to
@@ -37,7 +39,7 @@ public class feed_post extends Fragment {
     }
 
 
-    public static feed_post newInstance(Post post) {
+    public static feed_post newInstance(Post post, List<Reaction> reactions) {
 
         feed_post fragment = new feed_post();
 
@@ -46,6 +48,7 @@ public class feed_post extends Fragment {
         args.putString(ARG_USERID, post.user_id);
         args.putString(ARG_CONTENT, post.content);
         args.putString(ARG_STAMP, post.stamp);
+        // System.out.println(" Fragment : :  " + post.id);
         args.putInt(ARG_ID, post.id);
 
         fragment.setArguments(args);
