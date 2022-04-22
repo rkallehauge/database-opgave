@@ -45,7 +45,6 @@ public class postCreation extends AppCompatActivity {
         // post_reaction
         sManager = getSupportFragmentManager();
 
-
         setContentView(R.layout.activity_post_creation);
         List<Post> l  = getPosts();
         for(Post post:l){
@@ -129,10 +128,11 @@ public class postCreation extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void makePost(Post post){
         // TODO : unfuck pls
-        List<Reaction> reactions = getReactions(post);
+        int[] reactions = getReactions(post);
         System.out.println(reactions);
 
         feed_post fragment = feed_post.newInstance(post, reactions);
+        System.out.println(reactions);
 
         // TODO : sometimes this crashes the app, unsure as to why atm
         sManager.beginTransaction().add(R.id.postFeed, fragment).commit();
@@ -195,19 +195,30 @@ public class postCreation extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public List<Reaction> getReactions(Post post){
+    public int[] getReactions(Post post){
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         ReactionDao reactiondao = db.ReactionDao();
         // hopefully this shitcode works
+
         CompletableFuture<List<Reaction>> reactions = CompletableFuture.supplyAsync(() -> reactiondao.getReactions(post.id));
         try{
-            return reactions.get();
+            List<Reaction> list = reactions.get();
+            int[] reactionsList = {0,0,0};
+            for(Reaction r:list){
+                reactionsList[r.type]++;
+            }
+            return reactionsList;
+
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return null;
+    }
+    public void clearFeed(){
+        // TODO : when the app shutsdown temporarily, the feed duplicates, so we either need to weed out
+        //  all bugs that cause a reload, or we need to swipe it under the rug by hiding the problem
     }
 }

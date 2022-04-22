@@ -8,12 +8,14 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.app.FragmentTransaction;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,27 +31,33 @@ public class feed_post extends Fragment {
     private static final String ARG_STAMP = "param3";
     private static final String ARG_ID = "param4";
 
+    private static final String ARG_REACTIONS = "param5";
+
     private String user_id;
     private String content;
     private String stamp;
     private Integer id;
+
+    private int[] reactions;
 
     public feed_post() {
         // Required empty public constructor
     }
 
 
-    public static feed_post newInstance(Post post, List<Reaction> reactions) {
+    public static feed_post newInstance(Post post, int[] reactions) {
 
         feed_post fragment = new feed_post();
-
         Bundle args = new Bundle();
+
+
 
         args.putString(ARG_USERID, post.user_id);
         args.putString(ARG_CONTENT, post.content);
         args.putString(ARG_STAMP, post.stamp);
         // System.out.println(" Fragment : :  " + post.id);
         args.putInt(ARG_ID, post.id);
+        args.putIntArray(ARG_REACTIONS, reactions);
 
         fragment.setArguments(args);
 
@@ -117,12 +125,17 @@ public class feed_post extends Fragment {
             }
         });
         // Scuffed asf
+
+        int[] reactions = args.getIntArray(ARG_REACTIONS);
         for(int i = 0; i <= 2; i++){
-            ViewGroup vg = (ViewGroup ) viewgroup.findViewById(R.id.reactionImageContainer);
+            ViewGroup vg = (ViewGroup) viewgroup.findViewById(R.id.reactionImageContainer);
 
             View v = ((ViewGroup)vg.getChildAt(i)).getChildAt(0);
 
-            int type = i;
+            TextView textview = (TextView) ((ViewGroup)vg.getChildAt(i)).getChildAt(1);
+            textview.setText("Votes: " +reactions[i]);
+            // Types are defined as 1 : 2 : 3
+            int type = i+1;
 
             v.setOnClickListener(new View.OnClickListener() {
                 @RequiresApi(api = Build.VERSION_CODES.O)
