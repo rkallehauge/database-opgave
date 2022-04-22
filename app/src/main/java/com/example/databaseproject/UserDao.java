@@ -22,6 +22,9 @@ public interface UserDao {
     @Insert
     void insertAll(User... users);
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    void insert(User user);
+
     // Delete user.
     @Delete
     void delete(User user);
@@ -29,7 +32,6 @@ public interface UserDao {
     @Query("SELECT id FROM User WHERE id = :userId")
     String findUserById(String userId);
 
-    @Query("INSERT INTO User VALUES( :id,:user,:time)")
-    void insert(String id, String user,String time);
+
 
 }
