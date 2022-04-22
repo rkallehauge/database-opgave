@@ -117,8 +117,10 @@ public class feed_post extends Fragment {
             }
         });
         // Scuffed asf
-        for(int i = 1; i <= 3; i++){
-            View v = viewgroup.getChildAt(i);
+        for(int i = 0; i <= 2; i++){
+            ViewGroup vg = (ViewGroup ) viewgroup.findViewById(R.id.reactionImageContainer);
+
+            View v = ((ViewGroup)vg.getChildAt(i)).getChildAt(0);
 
             int type = i;
 
@@ -139,11 +141,10 @@ public class feed_post extends Fragment {
     }
 
     private void flipReaction(ViewGroup v){
-        for(int i = 1; i <= 3; i++){
-            if(v.getChildAt(i).getVisibility() == View.VISIBLE)
-                v.getChildAt(i).setVisibility(View.GONE);
-            else
-                v.getChildAt(i).setVisibility(View.VISIBLE);
-        }
+        System.out.println("flipReaction");
+        if(v.findViewById(R.id.reactionImageContainer).getVisibility() == View.GONE)
+            v.findViewById(R.id.reactionImageContainer).setVisibility(View.VISIBLE);
+        else
+            v.findViewById(R.id.reactionImageContainer).setVisibility(View.GONE);
     }
 }
