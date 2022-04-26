@@ -179,6 +179,9 @@ public class feed_post extends Fragment {
                         args.putBoolean(STATE_COMMENTS, true);
                     }
                 }
+                // Flip rotation of button
+                float r = (view.getRotation() + 180) % 360;
+                view.setRotation(r);
             }
         });
 
