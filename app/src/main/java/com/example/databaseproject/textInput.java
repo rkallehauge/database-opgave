@@ -58,9 +58,7 @@ public class textInput extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
             startedFromFragment = getArguments().getBoolean(PARENT_IS_FRAGMENT);
-        }
     }
 
     @Override
@@ -75,9 +73,8 @@ public class textInput extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof Activity){
+        if (context instanceof Activity)
             this.listener = (FragmentActivity) context;
-        }
     }
 
     @Override
@@ -92,43 +89,33 @@ public class textInput extends Fragment {
     }
     // TODO : handle text shit in here
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onStart(){
         super.onStart();
-        boolean startedFromFragment = getArguments().getBoolean(PARENT_IS_FRAGMENT);
         String parentId = getArguments().getString(PARENT_ID);
-
 
         // Post button handler
         View postButton = getView().findViewById(R.id.inputPost);
-        postButton.setOnClickListener(new View.OnClickListener() {
-            // Post handling
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            public void onClick(View view) {
+        postButton.setOnClickListener((View view) -> {
                 String input = ((EditText) getView().findViewById(R.id.userTextInput)).getText().toString();
-                if(startedFromFragment){
+                if(getArguments().getBoolean(PARENT_IS_FRAGMENT)){
                     // Find parent fragment
-                feed_post parent = (feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId);
-                parent.post(input);
-                getFragmentManager().popBackStack();
-                } else{
+                    ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).post(input);
+                    getFragmentManager().popBackStack();
+                } else
                     ((postFeed)getActivity()).post(input);
-                }
             }
-        });
+        );
 
         View cancelButton = getView().findViewById(R.id.inputCancel);
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view){
-                if(startedFromFragment){
-                    // Find parent fragment
-                    feed_post parent = (feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId);
-                    parent.close();
-                } else{
+        cancelButton.setOnClickListener((View view) -> {
+                if(startedFromFragment)
+                    ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).close();
+                else
                     ((postFeed) getActivity()).close(parentId);
-                }
             }
-        });
+        );
 
     }
 }

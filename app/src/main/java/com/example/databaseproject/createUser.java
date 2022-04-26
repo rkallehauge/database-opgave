@@ -47,73 +47,46 @@ public class createUser extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-    }
-
-    // TODO : More accurate method name
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public void isValidId(View view) {
-        new Thread (() -> {
-            AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                    AppDatabase.class, "User").build();
-            String id = ((EditText) findViewById(R.id.userIdInput)).getText().toString();
-            UserDao userDao = db.UserDao();
-            String takenUser = userDao.findUserById(id);
-            if (takenUser == null) {
-
-                // get session
-                SharedPreferences pref_userid = getSharedPreferences("user", Context.MODE_PRIVATE);
-                // create session editor
-                Editor editor = pref_userid.edit();
-                // put id into session
-                editor.putString("user_id", id);
-                // git commit xd
-                editor.commit();
-
-
-                String name = ((EditText) findViewById(R.id.userNameInput)).getText().toString();
-
-
-                db.UserDao().insert(new User(id, name, OffsetDateTime.now().toString()));
-                db.close();
-                finish();
-            }
-        }).start();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void tryInsert(View view) {
-
         SessionHandler sh = new SessionHandler(this,"user");
 
         new Thread (() -> {
+            AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+
+            //Find users from remote and insert
             JSONArray remoteUsers = remote.updateFromRemote("users");
             for(int i = 0; i < remoteUsers.length(); i++) {
                 try {
                     JSONObject entry = remoteUsers.getJSONObject(i);
-                    insertUser(entry.getString("id"), entry.getString("name"),entry.getString("stamp"));
+                    insertUser(entry.getString("id"), entry.getString("name"),entry.getString("stamp"),db);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
-            String id = ((EditText) findViewById(R.id.userIdInput)).getText().toString();
-        if(!isUsedId(id)) {
-            String name = ((EditText) findViewById(R.id.userNameInput)).getText().toString();
-            insertUser(id,name, OffsetDateTime.now().toString());
-        }
-        else{
-            ((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
-        }
 
-        sh.putString("user_id", id);
-        finish();
+            String id = ((EditText) findViewById(R.id.userIdInput)).getText().toString();
+            //Insert user if not used
+            if(!isUsedId(id,db)) {
+                String name = ((EditText) findViewById(R.id.userNameInput)).getText().toString();
+                insertUser(id,name, OffsetDateTime.now().toString(),db);
+            }
+            //Show error message if already used
+            else{
+                ((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
+            }
+
+            //Insert userId to sessionHandler
+            sh.putString("user_id", id);
+            finish();
 
 
         }).start();
     }
 
-    public void insertUser(String id, String name, String time) {
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+    public void insertUser(String id, String name, String time, AppDatabase db) {
         db.UserDao().insert(new User(id,name, time));
         JSONObject userEntry = new JSONObject();
         try {
@@ -126,9 +99,8 @@ public class createUser extends AppCompatActivity {
         remote.insertRemote("users",userEntry);
     }
 
-    private boolean isUsedId(String userId) {
+    private boolean isUsedId(String userId,AppDatabase db) {
         if(userId == null || userId == "") return true;
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         UserDao userDao = db.UserDao();
         return (userDao.findUserById(userId) != null);
     }
