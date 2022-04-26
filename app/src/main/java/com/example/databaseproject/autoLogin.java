@@ -29,7 +29,7 @@ public class autoLogin extends AppCompatActivity {
         if(user_id != null){
             System.out.println("user_id" + user_id);
             System.out.println("Session successfully gotten");
-            Intent intent = new Intent(this, postCreation.class);
+            Intent intent = new Intent(this, postFeed.class);
             startActivity(intent);
 
         } else{

@@ -26,13 +26,14 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="post"
-                android:text="@string/createPost" />
+                android:text="@string/createPost"
+                android:id="@+id/inputPost"
+            />
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@android:string/cancel"
-                android:onClick="close"
+                android:id="@+id/inputCancel"
                 />
         </LinearLayout>
 

@@ -28,7 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class postCreation extends AppCompatActivity {
+public class postFeed extends AppCompatActivity {
 
     // For interacting with fragment types, literal fragments
     FragmentManager manager;
@@ -100,7 +100,7 @@ public class postCreation extends AppCompatActivity {
 
 
         FragmentTransaction transaction = manager.beginTransaction();
-        Fragment fragment = new textInput();
+        Fragment fragment = textInput.newInstance(false, null);
 
         transaction.add(R.id.postCreation, fragment, "textInput");
         transaction.addToBackStack("idkbro");
@@ -110,14 +110,13 @@ public class postCreation extends AppCompatActivity {
     // TODO : Find less scuffed way to handle text, possibly (hopefully ) through textInput
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void post(View view){
+    public void post(String content){
 
         // Show button again
         showFeed();
 
         SessionHandler sh = new SessionHandler(this,"user");
         String user_id = sh.getString("user_id");
-        String content = ((EditText) findViewById(R.id.userTextInput)).getText().toString();
         String epoch = OffsetDateTime.now().toString();
 
         Post post = new Post(user_id,content,epoch);
@@ -151,10 +150,18 @@ public class postCreation extends AppCompatActivity {
         }).start();
     }
 
+    // called from activity
     public void close(View view){
-
         showFeed();
         manager.popBackStack();
+    }
+
+    // called from fragment
+    public void close(String id){
+        manager.popBackStack();
+        // Show reactionContainer again
+
+        showFeed();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -176,9 +183,19 @@ public class postCreation extends AppCompatActivity {
         return null;
     }
 
+    // Only inserts comment into db, doesn't create display
+    public void makeComment(Comment comment){
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+        AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+        CommentDao commentdao = db.CommentDao();
+        new Thread(() -> {
+        commentdao.insertAll(comment);
+        }).start();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void makePost(Post post){
-        // TODO : unfuck pls
+
         int[] reactions = getReactions(post);
         System.out.println(reactions);
 
@@ -186,12 +203,8 @@ public class postCreation extends AppCompatActivity {
         System.out.println(reactions);
 
         // TODO : sometimes this crashes the app, unsure as to why atm
-        sManager.beginTransaction().add(R.id.postFeed, fragment).commit();
+        sManager.beginTransaction().add(R.id.postFeed, fragment, String.valueOf(post.id)).commit();
 
-    }
-    // TODO : Perhaps handle this in post_post, not sure how to do that atm, other than propagating method call from here
-    public void react(View view){
-        System.out.println(view.getId());
     }
 
     public void hideFeed(){
@@ -229,8 +242,6 @@ public class postCreation extends AppCompatActivity {
         System.out.println(dbReturn);
             // No current reaction exists on this post by this user
         System.out.println("post_id : " + post_id + " user_id: "+ user_id);
-
-
         if(dbReturn != 0){
             System.out.println("Existing reaction updated");
             reactiondao.updateReaction(post_id,user_id,type);
@@ -239,9 +250,7 @@ public class postCreation extends AppCompatActivity {
             System.out.println("New reaction posted");
             reactiondao.insertReactions(reaction);
         }
-
         db.close();
-
         }).start();
     }
 
@@ -251,7 +260,6 @@ public class postCreation extends AppCompatActivity {
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         ReactionDao reactiondao = db.ReactionDao();
         // hopefully this shitcode works
-
         CompletableFuture<List<Reaction>> reactions = CompletableFuture.supplyAsync(() -> reactiondao.getReactions(post.id));
         try{
             List<Reaction> list = reactions.get();
@@ -260,7 +268,6 @@ public class postCreation extends AppCompatActivity {
                 reactionsList[r.type]++;
             }
             return reactionsList;
-
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -268,6 +275,23 @@ public class postCreation extends AppCompatActivity {
         }
         return null;
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public List<Comment> getComments(int post_id){
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+        AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+        CommentDao commentdao = db.CommentDao();
+        CompletableFuture<List<Comment>> result = CompletableFuture.supplyAsync(() -> commentdao.getAllFromPostId(post_id));
+        try{
+            return result.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public void clearFeed(){
         // TODO : when the app shutsdown temporarily, the feed duplicates, so we either need to weed out
         //  all bugs that cause a reload, or we need to swipe it under the rug by hiding the problem

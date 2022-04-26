@@ -17,6 +17,8 @@
             android:orientation="vertical"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
         >
           <LinearLayout
               android:layout_width="match_parent"
@@ -59,16 +61,27 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:id="@+id/reactionContainer"
-                >
+            >
 
             <!--
             TODO : Perhaps a button would be more fitting, idk
             -->
+
             <Button
                 android:id="@+id/postReact"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="React"
+                android:layout_weight="0"
+                android:layout_margin="5dp"
+            />
+            <Button
+                android:id="@+id/postComment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Comment"
+                android:layout_weight="0"
+                android:layout_margin="5dp"
             />
                 <!--
                 reaction image size is 48px~ square
@@ -76,12 +89,15 @@
                 TODO : make current reaction highlighted on load
                 -->
 
+
+
                 <LinearLayout
+                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:id="@+id/reactionImageContainer"
-                    android:visibility="gone"
+                    android:layout_weight="1"
                     >
 
                     <LinearLayout
@@ -146,6 +162,19 @@
                 </LinearLayout>
 
             </LinearLayout>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:id="@+id/openComments"
+                android:src="@drawable/ic_open"
+            />
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/commentContainer"
+            />
         </LinearLayout>
 
     </RelativeLayout>

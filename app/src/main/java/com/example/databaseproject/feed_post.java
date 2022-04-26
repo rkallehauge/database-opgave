@@ -1,21 +1,21 @@
 package com.example.databaseproject;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
-import android.app.FragmentTransaction;
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.util.ArrayList;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -30,8 +30,9 @@ public class feed_post extends Fragment {
     private static final String ARG_CONTENT = "param2";
     private static final String ARG_STAMP = "param3";
     private static final String ARG_ID = "param4";
-
     private static final String ARG_REACTIONS = "param5";
+    private static final String STATE_COMMENTS = "param6";
+
 
     private String user_id;
     private String content;
@@ -58,6 +59,8 @@ public class feed_post extends Fragment {
         // System.out.println(" Fragment : :  " + post.id);
         args.putInt(ARG_ID, post.id);
         args.putIntArray(ARG_REACTIONS, reactions);
+        args.putBoolean(STATE_COMMENTS, false);
+
 
         fragment.setArguments(args);
 
@@ -104,26 +107,81 @@ public class feed_post extends Fragment {
             stampText.setText(stamp);
 
         }
-
-        // REACT button pressed
-        ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
-        Button button = (Button) getView().findViewById(R.id.postReact);
+        getView().setId(getArguments().getInt(ARG_ID));
 
         int post_id = args.getInt(ARG_ID);
         String user_id = args.getString(ARG_USERID);
-
+        // REACT button pressed
+        ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
+        Button button = viewgroup.findViewById(R.id.postReact);
+        // REACT button listener
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                /*
-                 TODO : post_id only actually works when you open the app,
-                   and the posts get loaded freshly, not when fragments are
-                   loaded dynamically, would be nice if it did
-                 */
                 System.out.println("post_id: " + post_id);
-                // TODO : Very scuffed, not good
-                flipReaction(viewgroup);
+                flipViewVisibility(viewgroup, R.id.reactionImageContainer);
+                flipViewVisibility(viewgroup, R.id.postComment);
             }
         });
+
+        button =  viewgroup.findViewById(R.id.postComment);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view){
+                flipViewVisibility(viewgroup, R.id.postReact);
+                flipViewVisibility(viewgroup, R.id.postComment);
+
+                FragmentManager manager = getActivity().getFragmentManager();
+                FragmentTransaction t = manager.beginTransaction();
+
+                android.app.FragmentTransaction transaction = manager.beginTransaction();
+
+                // Little bit scuffed, but it works
+                android.app.Fragment fragment = textInput.newInstance(true, String.valueOf(args.getInt(ARG_ID)));
+                System.out.println("inputText fragment started");
+
+                transaction.add(id, fragment, "textInput");
+                transaction.addToBackStack("idkbro");
+                transaction.commit();
+
+
+            }
+        });
+
+        // Comments open button listener
+        ImageButton b = getView().findViewById(R.id.openComments);
+        b.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onClick(View view) {
+                int count = ((ViewGroup) getView().findViewById(R.id.commentContainer)).getChildCount();
+                System.out.println(count);
+                if(count==0){
+                String content = args.getString(ARG_CONTENT);
+                String user_id = args.getString(ARG_USERID);
+                int post_id = args.getInt(ARG_ID);
+                String stamp = args.getString(ARG_STAMP);
+                // childcount > 0 or something to not duplicate entries after init load
+                List<Comment> comments = ((postFeed)getActivity()).getComments(post_id);
+
+                androidx.fragment.app.FragmentManager manager = getActivity().getSupportFragmentManager();
+                androidx.fragment.app.FragmentTransaction t = manager.beginTransaction();
+                for(Comment c:comments){
+                    post_comment comment = post_comment.newInstance(c.content,c.user_id,c.post_id,c.stamp);
+                    t.add(R.id.commentContainer, comment,null);
+                }
+                t.commit();
+                args.putBoolean(STATE_COMMENTS, true);
+                } else{
+                    if(args.getBoolean(STATE_COMMENTS)){
+                        getView().findViewById(R.id.commentContainer).setVisibility(View.GONE);
+                        args.putBoolean(STATE_COMMENTS, false);
+                    } else{
+                        getView().findViewById(R.id.commentContainer).setVisibility(View.VISIBLE);
+                        args.putBoolean(STATE_COMMENTS, true);
+                    }
+                }
+            }
+        });
+
         // Scuffed asf
 
         int[] reactions = args.getIntArray(ARG_REACTIONS);
@@ -142,10 +200,12 @@ public class feed_post extends Fragment {
                 public void onClick(View view) {
 
                     // Slightly scuffed
-                    ((postCreation)getActivity()).makeReaction(post_id, type, user_id);
+                    ((postFeed)getActivity()).makeReaction(post_id, type, user_id);
 
                     // Hide Reactions after reaction has been made.
-                    flipReaction(viewgroup);
+                    flipViewVisibility(viewgroup, R.id.reactionImageContainer);
+                    flipViewVisibility(viewgroup, R.id.postComment);
+
                 }
             });
         }
@@ -153,11 +213,48 @@ public class feed_post extends Fragment {
 
     }
 
-    private void flipReaction(ViewGroup v){
-        System.out.println("flipReaction");
-        if(v.findViewById(R.id.reactionImageContainer).getVisibility() == View.GONE)
-            v.findViewById(R.id.reactionImageContainer).setVisibility(View.VISIBLE);
-        else
-            v.findViewById(R.id.reactionImageContainer).setVisibility(View.GONE);
+    private void flipViewVisibility(ViewGroup v, int viewId){
+        if(v.findViewById(viewId).getVisibility() == View.GONE){
+            v.findViewById(viewId).setVisibility(View.VISIBLE);
+        }
+        else{
+            v.findViewById(viewId).setVisibility(View.GONE);
+        }
     }
+
+    // This here is a comment post, not a post post, not to be confused with postFeed.post(), which is a post post
+    public void post(String input){
+        Bundle args = getArguments();
+        int post_id = args.getInt(ARG_ID);
+        String user_id = args.getString(ARG_USERID);
+
+        Comment comment = new Comment();
+        comment.content = input;
+        comment.user_id = user_id;
+        comment.post_id = post_id;
+        comment.stamp = OffsetDateTime.now().toString();
+
+        ((postFeed) getActivity()).makeComment(comment);
+
+        ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
+        flipViewVisibility(viewgroup, R.id.postReact);
+        flipViewVisibility(viewgroup, R.id.postComment);
+
+
+    }
+
+    // This bugs when you try to comment on multiple things at once, perhaps a hideAllBut(int id) would save our lives
+    public void close(){
+        ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
+        flipViewVisibility(viewgroup, R.id.postReact);
+        flipViewVisibility(viewgroup, R.id.postComment);
+        getActivity().getFragmentManager().popBackStack();
+    }
+
+
+    public List<Comment> getComments(){
+        List<Comment> p = null;
+        return p;
+    }
+
 }
