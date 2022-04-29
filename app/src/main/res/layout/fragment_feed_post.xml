@@ -169,12 +169,23 @@
                 android:id="@+id/openComments"
                 android:src="@drawable/ic_open"
             />
+
+
+            <!--
+            Cringe wrapper for commentContainer
+            -->
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/commentWrapper"
+                >
             <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:id="@+id/commentContainer"
             />
+            </LinearLayout>
+
         </LinearLayout>
 
     </RelativeLayout>

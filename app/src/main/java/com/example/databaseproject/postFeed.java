@@ -195,12 +195,9 @@ public class postFeed extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void makePost(Post post){
-
         int[] reactions = getReactions(post);
-        System.out.println(reactions);
 
         feed_post fragment = feed_post.newInstance(post, reactions);
-        System.out.println(reactions);
 
         // TODO : sometimes this crashes the app, unsure as to why atm
         sManager.beginTransaction().add(R.id.postFeed, fragment, String.valueOf(post.id)).commit();
@@ -263,9 +260,9 @@ public class postFeed extends AppCompatActivity {
         CompletableFuture<List<Reaction>> reactions = CompletableFuture.supplyAsync(() -> reactiondao.getReactions(post.id));
         try{
             List<Reaction> list = reactions.get();
-            int[] reactionsList = {0,0,0};
+            int[] reactionsList = {0,0,0,0};
             for(Reaction r:list){
-                reactionsList[r.type]++;
+                reactionsList[r.type-1]++;
             }
             return reactionsList;
         } catch (ExecutionException e) {

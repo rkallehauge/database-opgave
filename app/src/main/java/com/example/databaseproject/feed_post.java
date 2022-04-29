@@ -32,6 +32,7 @@ public class feed_post extends Fragment {
     private static final String ARG_ID = "param4";
     private static final String ARG_REACTIONS = "param5";
     private static final String STATE_COMMENTS = "param6";
+    private static final String R_ID_CC = "param7";
 
 
     private String user_id;
@@ -60,7 +61,8 @@ public class feed_post extends Fragment {
         args.putInt(ARG_ID, post.id);
         args.putIntArray(ARG_REACTIONS, reactions);
         args.putBoolean(STATE_COMMENTS, false);
-
+        // Dear fucking god work
+        args.putInt(R_ID_CC, 20557+post.id);
 
         fragment.setArguments(args);
 
@@ -107,8 +109,9 @@ public class feed_post extends Fragment {
             stampText.setText(stamp);
 
         }
-        getView().setId(getArguments().getInt(ARG_ID));
-
+        // please work
+        ((ViewGroup)(getView().findViewById(R.id.commentWrapper))).getChildAt(0).setId(args.getInt(R_ID_CC));
+        int commentContainer = args.getInt(R_ID_CC);
         int post_id = args.getInt(ARG_ID);
         String user_id = args.getString(ARG_USERID);
         // REACT button pressed
@@ -126,56 +129,58 @@ public class feed_post extends Fragment {
         button =  viewgroup.findViewById(R.id.postComment);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view){
+
+
                 flipViewVisibility(viewgroup, R.id.postReact);
                 flipViewVisibility(viewgroup, R.id.postComment);
+
 
                 FragmentManager manager = getActivity().getFragmentManager();
                 FragmentTransaction t = manager.beginTransaction();
 
                 android.app.FragmentTransaction transaction = manager.beginTransaction();
-
                 // Little bit scuffed, but it works
                 android.app.Fragment fragment = textInput.newInstance(true, String.valueOf(args.getInt(ARG_ID)));
                 System.out.println("inputText fragment started");
+                transaction.add(commentContainer, fragment, String.valueOf(post_id));
 
-                transaction.add(id, fragment, "textInput");
-                transaction.addToBackStack("idkbro");
+                transaction.addToBackStack(String.valueOf(post_id));
                 transaction.commit();
-
-
             }
         });
 
         // Comments open button listener
+
         ImageButton b = getView().findViewById(R.id.openComments);
         b.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
-                int count = ((ViewGroup) getView().findViewById(R.id.commentContainer)).getChildCount();
+                View v = getView();
+
+
+                // I legit dont know why this works, it doesn't remove any elements, but it somehow only adds the newest addition... ? ? ? ?
+                int count = ((ViewGroup) getView().findViewById(commentContainer)).getChildCount();
                 System.out.println(count);
                 if(count==0){
-                String content = args.getString(ARG_CONTENT);
-                String user_id = args.getString(ARG_USERID);
                 int post_id = args.getInt(ARG_ID);
-                String stamp = args.getString(ARG_STAMP);
                 // childcount > 0 or something to not duplicate entries after init load
-                List<Comment> comments = ((postFeed)getActivity()).getComments(post_id);
+                List<Comment> comments = getComments(post_id);
 
                 androidx.fragment.app.FragmentManager manager = getActivity().getSupportFragmentManager();
                 androidx.fragment.app.FragmentTransaction t = manager.beginTransaction();
                 for(Comment c:comments){
                     post_comment comment = post_comment.newInstance(c.content,c.user_id,c.post_id,c.stamp);
-                    t.add(R.id.commentContainer, comment,null);
+                    t.add(commentContainer, comment,null);
                 }
                 t.commit();
                 args.putBoolean(STATE_COMMENTS, true);
                 } else{
                     if(args.getBoolean(STATE_COMMENTS)){
-                        getView().findViewById(R.id.commentContainer).setVisibility(View.GONE);
+                        getView().findViewById(commentContainer).setVisibility(View.GONE);
                         args.putBoolean(STATE_COMMENTS, false);
                     } else{
-                        getView().findViewById(R.id.commentContainer).setVisibility(View.VISIBLE);
+                        getView().findViewById(commentContainer).setVisibility(View.VISIBLE);
                         args.putBoolean(STATE_COMMENTS, true);
                     }
                 }
@@ -183,7 +188,10 @@ public class feed_post extends Fragment {
                 float r = (view.getRotation() + 180) % 360;
                 view.setRotation(r);
             }
+
+
         });
+
 
         // Scuffed asf
 
@@ -192,7 +200,7 @@ public class feed_post extends Fragment {
             ViewGroup vg = (ViewGroup) viewgroup.findViewById(R.id.reactionImageContainer);
 
             View v = ((ViewGroup)vg.getChildAt(i)).getChildAt(0);
-
+            TextView t = (TextView) (((ViewGroup)vg.getChildAt(i)).getChildAt(1));
             TextView textview = (TextView) ((ViewGroup)vg.getChildAt(i)).getChildAt(1);
             textview.setText("Votes: " +reactions[i]);
             // Types are defined as 1 : 2 : 3
@@ -202,6 +210,8 @@ public class feed_post extends Fragment {
                 @RequiresApi(api = Build.VERSION_CODES.O)
                 public void onClick(View view) {
 
+                    // fix vote updation thing
+                    System.out.println(t.getText());
                     // Slightly scuffed
                     ((postFeed)getActivity()).makeReaction(post_id, type, user_id);
 
@@ -225,7 +235,12 @@ public class feed_post extends Fragment {
         }
     }
 
+    private void showView(ViewGroup v, int viewId){
+        v.findViewById(viewId).setVisibility(View.VISIBLE);
+    }
+
     // This here is a comment post, not a post post, not to be confused with postFeed.post(), which is a post post
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void post(String input){
         Bundle args = getArguments();
         int post_id = args.getInt(ARG_ID);
@@ -255,9 +270,9 @@ public class feed_post extends Fragment {
     }
 
 
-    public List<Comment> getComments(){
-        List<Comment> p = null;
-        return p;
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private List<Comment> getComments(int post_id){
+        return ((postFeed)getActivity()).getComments(post_id);
     }
 
 }
