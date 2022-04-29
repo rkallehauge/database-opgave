@@ -53,7 +53,6 @@ public class feed_post extends Fragment {
         Bundle args = new Bundle();
 
 
-
         args.putString(ARG_USERID, post.user_id);
         args.putString(ARG_CONTENT, post.content);
         args.putString(ARG_STAMP, post.stamp);
@@ -81,11 +80,10 @@ public class feed_post extends Fragment {
         // Semi fix
         View view = inflater.inflate(R.layout.fragment_feed_post, container, false);
 
-
         return view;
-
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onStart() {
         super.onStart();
@@ -118,19 +116,16 @@ public class feed_post extends Fragment {
         ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
         Button button = viewgroup.findViewById(R.id.postReact);
         // REACT button listener
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
+        button.setOnClickListener((View view) -> {
                 System.out.println("post_id: " + post_id);
                 flipViewVisibility(viewgroup, R.id.reactionImageContainer);
                 flipViewVisibility(viewgroup, R.id.postComment);
             }
-        });
-
-        button =  viewgroup.findViewById(R.id.postComment);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view){
+        );
 
 
+        button = viewgroup.findViewById(R.id.postComment);
+        button.setOnClickListener((View view) -> {
                 flipViewVisibility(viewgroup, R.id.postReact);
                 flipViewVisibility(viewgroup, R.id.postComment);
 
@@ -147,35 +142,30 @@ public class feed_post extends Fragment {
                 transaction.addToBackStack(String.valueOf(post_id));
                 transaction.commit();
             }
-        });
+        );
 
         // Comments open button listener
 
         ImageButton b = getView().findViewById(R.id.openComments);
-        b.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
-            @Override
-            public void onClick(View view) {
-                View v = getView();
-
-
-                // I legit dont know why this works, it doesn't remove any elements, but it somehow only adds the newest addition... ? ? ? ?
+        b.setOnClickListener((View view) -> {
                 int count = ((ViewGroup) getView().findViewById(commentContainer)).getChildCount();
                 System.out.println(count);
                 if(count==0){
-                int post_id = args.getInt(ARG_ID);
-                // childcount > 0 or something to not duplicate entries after init load
-                List<Comment> comments = getComments(post_id);
+                    // childcount > 0 or something to not duplicate entries after init load
+                    List<Comment> comments = ((postFeed)getActivity()).getComments(post_id);
 
-                androidx.fragment.app.FragmentManager manager = getActivity().getSupportFragmentManager();
-                androidx.fragment.app.FragmentTransaction t = manager.beginTransaction();
-                for(Comment c:comments){
-                    post_comment comment = post_comment.newInstance(c.content,c.user_id,c.post_id,c.stamp);
-                    t.add(commentContainer, comment,null);
+                    androidx.fragment.app.FragmentManager manager = getActivity().getSupportFragmentManager();
+                    androidx.fragment.app.FragmentTransaction t = manager.beginTransaction();
+                    for(Comment c:comments)
+                        t.add(
+                                commentContainer,
+                                post_comment.newInstance(c.content,c.user_id,c.post_id,c.stamp),
+                                null
+                        );
+                    t.commit();
+                    args.putBoolean(STATE_COMMENTS, true);
                 }
-                t.commit();
-                args.putBoolean(STATE_COMMENTS, true);
-                } else{
+                else{
                     if(args.getBoolean(STATE_COMMENTS)){
                         getView().findViewById(commentContainer).setVisibility(View.GONE);
                         args.putBoolean(STATE_COMMENTS, false);
@@ -188,9 +178,7 @@ public class feed_post extends Fragment {
                 float r = (view.getRotation() + 180) % 360;
                 view.setRotation(r);
             }
-
-
-        });
+        );
 
 
         // Scuffed asf
@@ -200,18 +188,13 @@ public class feed_post extends Fragment {
             ViewGroup vg = (ViewGroup) viewgroup.findViewById(R.id.reactionImageContainer);
 
             View v = ((ViewGroup)vg.getChildAt(i)).getChildAt(0);
-            TextView t = (TextView) (((ViewGroup)vg.getChildAt(i)).getChildAt(1));
             TextView textview = (TextView) ((ViewGroup)vg.getChildAt(i)).getChildAt(1);
             textview.setText("Votes: " +reactions[i]);
             // Types are defined as 1 : 2 : 3
             int type = i+1;
 
-            v.setOnClickListener(new View.OnClickListener() {
-                @RequiresApi(api = Build.VERSION_CODES.O)
-                public void onClick(View view) {
+            v.setOnClickListener((View view) -> {
 
-                    // fix vote updation thing
-                    System.out.println(t.getText());
                     // Slightly scuffed
                     ((postFeed)getActivity()).makeReaction(post_id, type, user_id);
 
@@ -220,24 +203,17 @@ public class feed_post extends Fragment {
                     flipViewVisibility(viewgroup, R.id.postComment);
 
                 }
-            });
+            );
         }
-
-
     }
 
     private void flipViewVisibility(ViewGroup v, int viewId){
-        if(v.findViewById(viewId).getVisibility() == View.GONE){
+        if(v.findViewById(viewId).getVisibility() == View.GONE)
             v.findViewById(viewId).setVisibility(View.VISIBLE);
-        }
-        else{
+        else
             v.findViewById(viewId).setVisibility(View.GONE);
-        }
     }
 
-    private void showView(ViewGroup v, int viewId){
-        v.findViewById(viewId).setVisibility(View.VISIBLE);
-    }
 
     // This here is a comment post, not a post post, not to be confused with postFeed.post(), which is a post post
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -257,8 +233,6 @@ public class feed_post extends Fragment {
         ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
         flipViewVisibility(viewgroup, R.id.postReact);
         flipViewVisibility(viewgroup, R.id.postComment);
-
-
     }
 
     // This bugs when you try to comment on multiple things at once, perhaps a hideAllBut(int id) would save our lives
@@ -274,5 +248,4 @@ public class feed_post extends Fragment {
     private List<Comment> getComments(int post_id){
         return ((postFeed)getActivity()).getComments(post_id);
     }
-
 }

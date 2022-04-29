@@ -88,16 +88,16 @@ public class postFeed extends AppCompatActivity {
             postdao.insertAll(p);
         }
 
-        List<Post> l  = getPosts();
+        List<Post> l  = getPosts(db);
         for(Post post:l){
             makePost(post);
         }
     }
+
     public void createPost(View view){
 
         // Hide button and feed for now
         hideFeed();
-
 
         FragmentTransaction transaction = manager.beginTransaction();
         Fragment fragment = textInput.newInstance(false, null);
@@ -107,8 +107,8 @@ public class postFeed extends AppCompatActivity {
         transaction.commit();
 
     }
-    // TODO : Find less scuffed way to handle text, possibly (hopefully ) through textInput
 
+    // TODO : Find less scuffed way to handle text, possibly (hopefully ) through textInput
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void post(String content){
 
@@ -123,29 +123,29 @@ public class postFeed extends AppCompatActivity {
 
         new Thread(()->{
 
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "User").fallbackToDestructiveMigration().build();
-        PostDao postdao = db.PostDao();
+            AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                    AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+            PostDao postdao = db.PostDao();
 
-        List<Long> result = postdao.insertAll(post);
-        System.out.println("post_id = " + result.get(0));
-        post.id = result.get(0).intValue();
+            List<Long> result = postdao.insertAll(post);
+            System.out.println("post_id = " + result.get(0));
+            post.id = result.get(0).intValue();
 
-        makePost(post);
+            makePost(post);
 
-        JSONObject jsonPost = new JSONObject();
-            try {
-                jsonPost.put("id",result.get(0));
-                jsonPost.put("user_id", user_id);
-                jsonPost.put("content",content);
-                jsonPost.put("stamp",epoch);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        remote.insertRemote("posts",jsonPost);
+            JSONObject jsonPost = new JSONObject();
+                try {
+                    jsonPost.put("id",result.get(0));
+                    jsonPost.put("user_id", user_id);
+                    jsonPost.put("content",content);
+                    jsonPost.put("stamp",epoch);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            remote.insertRemote("posts",jsonPost);
 
-        // Remove fragment again
-        manager.popBackStack();
+            // Remove fragment again
+            manager.popBackStack();
 
         }).start();
     }
@@ -165,13 +165,8 @@ public class postFeed extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public List<Post> getPosts(){
-
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-
-                AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+    public List<Post> getPosts(AppDatabase db){
         PostDao postdao = db.PostDao();
-
         CompletableFuture<List<Post>> posts = CompletableFuture.supplyAsync(postdao::getAll);
         try {
             return posts.get();
@@ -226,28 +221,28 @@ public class postFeed extends AppCompatActivity {
         String stamp = OffsetDateTime.now().toString();
         new Thread(()->{
 
-        Reaction reaction = new Reaction();
-        reaction.post_id = post_id;
-        reaction.user_id = user_id;
-        reaction.type = type;
-        reaction.stamp = stamp;
-        /*
-            TODO : This works, but can sometimes crash the app after a clean wipe of DB,
-             it can possibly not actually be a crash, but the Layout reloads as if it were a crash
-         */
-        int dbReturn = reactiondao.getReactionById(post_id,user_id);
-        System.out.println(dbReturn);
-            // No current reaction exists on this post by this user
-        System.out.println("post_id : " + post_id + " user_id: "+ user_id);
-        if(dbReturn != 0){
-            System.out.println("Existing reaction updated");
-            reactiondao.updateReaction(post_id,user_id,type);
-        // Update reac
-        } else{
-            System.out.println("New reaction posted");
-            reactiondao.insertReactions(reaction);
-        }
-        db.close();
+            Reaction reaction = new Reaction();
+            reaction.post_id = post_id;
+            reaction.user_id = user_id;
+            reaction.type = type;
+            reaction.stamp = stamp;
+            /*
+                TODO : This works, but can sometimes crash the app after a clean wipe of DB,
+                 it can possibly not actually be a crash, but the Layout reloads as if it were a crash
+             */
+            int dbReturn = reactiondao.getReactionById(post_id,user_id);
+            System.out.println(dbReturn);
+                // No current reaction exists on this post by this user
+            System.out.println("post_id : " + post_id + " user_id: "+ user_id);
+            if(dbReturn != 0){
+                System.out.println("Existing reaction updated");
+                reactiondao.updateReaction(post_id,user_id,type);
+            // Update reac
+            } else{
+                System.out.println("New reaction posted");
+                reactiondao.insertReactions(reaction);
+            }
+            db.close();
         }).start();
     }
 
