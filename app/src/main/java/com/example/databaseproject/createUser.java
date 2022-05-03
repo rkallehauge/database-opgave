@@ -104,7 +104,4 @@ public class createUser extends AppCompatActivity {
         UserDao userDao = db.UserDao();
         return (userDao.findUserById(userId) != null);
     }
-
-
-
 }
