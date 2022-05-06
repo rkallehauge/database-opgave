@@ -99,6 +99,7 @@ public class textInput extends Fragment {
         View postButton = getView().findViewById(R.id.inputPost);
         postButton.setOnClickListener((View view) -> {
                 String input = ((EditText) getView().findViewById(R.id.userTextInput)).getText().toString();
+                //Fragment is parent when a comment is posted
                 if(getArguments().getBoolean(PARENT_IS_FRAGMENT)){
                     // Find parent fragment
                     ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).post(input);

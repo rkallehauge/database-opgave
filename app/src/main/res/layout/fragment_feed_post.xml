@@ -172,7 +172,7 @@
 
 
             <!--
-            Cringe wrapper for commentContainer
+                Wrapper class used rather than created a child in code
             -->
             <LinearLayout
                 android:layout_width="fill_parent"

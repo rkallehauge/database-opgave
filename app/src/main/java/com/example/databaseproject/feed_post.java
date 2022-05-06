@@ -56,12 +56,10 @@ public class feed_post extends Fragment {
         args.putString(ARG_USERID, post.user_id);
         args.putString(ARG_CONTENT, post.content);
         args.putString(ARG_STAMP, post.stamp);
-        // System.out.println(" Fragment : :  " + post.id);
         args.putInt(ARG_ID, post.id);
-        args.putIntArray(ARG_REACTIONS, reactions);
-        args.putBoolean(STATE_COMMENTS, false);
-        // Dear fucking god work
-        args.putInt(R_ID_CC, 20557+post.id);
+        args.putIntArray(ARG_REACTIONS, reactions); //Count of reactions, index is type of reaction
+        args.putBoolean(STATE_COMMENTS, false); //Comment container opening state - true if open, false if closed
+        args.putInt(R_ID_CC, 20557+post.id); //Comment container id
 
         fragment.setArguments(args);
 
@@ -71,15 +69,12 @@ public class feed_post extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Semi fix
         View view = inflater.inflate(R.layout.fragment_feed_post, container, false);
-
         return view;
     }
 
@@ -87,9 +82,9 @@ public class feed_post extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        // TODO : Moved this out of the if-statement, not sure if the app crashes if getArguments() returns null, we'll see
         Bundle args = getArguments();
 
+        //If arguments for post are initiated
         if (getArguments() != null) {
             String uid, content, stamp;
 
@@ -105,9 +100,8 @@ public class feed_post extends Fragment {
 
             TextView stampText = getView().findViewById(R.id.postStamp);
             stampText.setText(stamp);
-
         }
-        // please work
+
         ((ViewGroup)(getView().findViewById(R.id.commentWrapper))).getChildAt(0).setId(args.getInt(R_ID_CC));
         int commentContainer = args.getInt(R_ID_CC);
         int post_id = args.getInt(ARG_ID);
@@ -117,71 +111,48 @@ public class feed_post extends Fragment {
         Button button = viewgroup.findViewById(R.id.postReact);
         // REACT button listener
         button.setOnClickListener((View view) -> {
-                System.out.println("post_id: " + post_id);
                 flipViewVisibility(viewgroup, R.id.reactionImageContainer);
                 flipViewVisibility(viewgroup, R.id.postComment);
             }
         );
-
 
         button = viewgroup.findViewById(R.id.postComment);
         button.setOnClickListener((View view) -> {
                 flipViewVisibility(viewgroup, R.id.postReact);
                 flipViewVisibility(viewgroup, R.id.postComment);
 
-
+                //Add text input for comment
                 FragmentManager manager = getActivity().getFragmentManager();
                 FragmentTransaction t = manager.beginTransaction();
 
                 android.app.FragmentTransaction transaction = manager.beginTransaction();
-                // Little bit scuffed, but it works
                 android.app.Fragment fragment = textInput.newInstance(true, String.valueOf(args.getInt(ARG_ID)));
-                System.out.println("inputText fragment started");
                 transaction.add(commentContainer, fragment, String.valueOf(post_id));
 
                 transaction.addToBackStack(String.valueOf(post_id));
                 transaction.commit();
+
             }
         );
 
         // Comments open button listener
-
         ImageButton b = getView().findViewById(R.id.openComments);
         b.setOnClickListener((View view) -> {
-                int count = ((ViewGroup) getView().findViewById(commentContainer)).getChildCount();
-                System.out.println(count);
-                if(count==0){
-                    // childcount > 0 or something to not duplicate entries after init load
-                    List<Comment> comments = ((postFeed)getActivity()).getComments(post_id);
 
-                    androidx.fragment.app.FragmentManager manager = getActivity().getSupportFragmentManager();
-                    androidx.fragment.app.FragmentTransaction t = manager.beginTransaction();
-                    for(Comment c:comments)
-                        t.add(
-                                commentContainer,
-                                post_comment.newInstance(c.content,c.user_id,c.post_id,c.stamp),
-                                null
-                        );
-                    t.commit();
+                killAndUpdateComments(commentContainer,post_id);
+
+                if(args.getBoolean(STATE_COMMENTS)){
+                    getView().findViewById(commentContainer).setVisibility(View.GONE);
+                    args.putBoolean(STATE_COMMENTS, false);
+                } else{
+                    getView().findViewById(commentContainer).setVisibility(View.VISIBLE);
                     args.putBoolean(STATE_COMMENTS, true);
-                }
-                else{
-                    if(args.getBoolean(STATE_COMMENTS)){
-                        getView().findViewById(commentContainer).setVisibility(View.GONE);
-                        args.putBoolean(STATE_COMMENTS, false);
-                    } else{
-                        getView().findViewById(commentContainer).setVisibility(View.VISIBLE);
-                        args.putBoolean(STATE_COMMENTS, true);
-                    }
                 }
                 // Flip rotation of button
                 float r = (view.getRotation() + 180) % 360;
                 view.setRotation(r);
             }
         );
-
-
-        // Scuffed asf
 
         int[] reactions = args.getIntArray(ARG_REACTIONS);
         for(int i = 0; i <= 2; i++){
@@ -194,17 +165,36 @@ public class feed_post extends Fragment {
             int type = i+1;
 
             v.setOnClickListener((View view) -> {
-
                     // Slightly scuffed
                     ((postFeed)getActivity()).makeReaction(post_id, type, user_id);
 
                     // Hide Reactions after reaction has been made.
                     flipViewVisibility(viewgroup, R.id.reactionImageContainer);
                     flipViewVisibility(viewgroup, R.id.postComment);
-
                 }
             );
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void killAndUpdateComments(int commentContainerId, int postId) {
+        ViewGroup commentContainer = (ViewGroup) getView().findViewById(commentContainerId);
+
+        //Remove all existing comments
+        commentContainer.removeAllViews();
+
+        //Insert all new comments
+        List<Comment> comments = ((postFeed)getActivity()).getComments(postId);
+
+        androidx.fragment.app.FragmentManager manager = getActivity().getSupportFragmentManager();
+        androidx.fragment.app.FragmentTransaction t = manager.beginTransaction();
+        for(Comment c:comments)
+            t.add(
+                    commentContainerId,
+                    post_comment.newInstance(c.content,c.user_id,c.post_id,c.stamp),
+                    null
+            );
+        t.commit();
     }
 
     private void flipViewVisibility(ViewGroup v, int viewId){
@@ -213,7 +203,6 @@ public class feed_post extends Fragment {
         else
             v.findViewById(viewId).setVisibility(View.GONE);
     }
-
 
     // This here is a comment post, not a post post, not to be confused with postFeed.post(), which is a post post
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -233,9 +222,11 @@ public class feed_post extends Fragment {
         ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
         flipViewVisibility(viewgroup, R.id.postReact);
         flipViewVisibility(viewgroup, R.id.postComment);
+
+        killAndUpdateComments(args.getInt(R_ID_CC),post_id);
     }
 
-    // This bugs when you try to comment on multiple things at once, perhaps a hideAllBut(int id) would save our lives
+    //TODO: This bugs when you try to comment on multiple things at once, perhaps a hideAllBut(int id) would save our lives
     public void close(){
         ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
         flipViewVisibility(viewgroup, R.id.postReact);
@@ -244,8 +235,4 @@ public class feed_post extends Fragment {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private List<Comment> getComments(int post_id){
-        return ((postFeed)getActivity()).getComments(post_id);
-    }
 }

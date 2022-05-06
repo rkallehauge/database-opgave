@@ -20,11 +20,13 @@
         <entry key="..\:/Users/Hanni/AndroidStudioProjects/DatabaseProject/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.254" />
         <entry key="..\:/Users/krist/Desktop/New folder/database-opgave/app/src/main/res/layout/activity_post_creation.xml" value="0.5744791666666667" />
         <entry key="..\:/Users/krist/Desktop/New folder/database-opgave/app/src/main/res/layout/fragment_text_input.xml" value="0.5744791666666667" />
-        <entry key="..\:/git/SDU/moduler/2.Semester/DM505 - Databasesystems/database-opgave/app/src/main/res/layout/activity_post_creation.xml" value="0.1358695652173913" />
+        <entry key="..\:/git/SDU/moduler/2.Semester/DM505 - Databasesystems/database-opgave/app/src/main/res/layout/activity_post_creation.xml" value="0.33" />
+        <entry key="..\:/git/SDU/moduler/2.Semester/DM505 - Databasesystems/database-opgave/app/src/main/res/layout/fragment_feed_post.xml" value="0.2828125" />
+        <entry key="..\:/git/SDU/moduler/2.Semester/DM505 - Databasesystems/database-opgave/app/src/main/res/layout/fragment_text_input.xml" value="0.33" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
