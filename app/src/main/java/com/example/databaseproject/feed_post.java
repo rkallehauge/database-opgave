@@ -54,6 +54,7 @@ public class feed_post extends Fragment {
         args.putIntArray(ARG_REACTIONS, reactions); //Count of reactions, index is type of reaction
         args.putBoolean(STATE_COMMENTS, false); //Comment container opening state - true if open, false if closed
         args.putInt(R_ID_CC, 20557+post.id); //Comment container id
+        //TODO find better method for finding an id for comment part of post
 
         fragment.setArguments(args);
 

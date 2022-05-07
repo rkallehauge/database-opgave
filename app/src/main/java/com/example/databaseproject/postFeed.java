@@ -43,7 +43,6 @@ public class postFeed extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         // Fragment fragment
         manager = getFragmentManager();
 
@@ -52,7 +51,7 @@ public class postFeed extends AppCompatActivity {
         sManager = getSupportFragmentManager();
 
         setContentView(R.layout.activity_post_creation);
-
+        clearFeed();
         new Thread(() -> createPostFromRemote()).start();
     }
 
@@ -79,19 +78,15 @@ public class postFeed extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        //Post test = new Post(999,"FourthUser","Benzin priserne er for billige","2022-04-21T18:22:07.169+02:00");
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         PostDao postdao = db.PostDao();
-        for(Post p: postList) {
-            Log.d("TEST",p.id + " " + p.user_id + " " + p.content + " " + p.stamp);
+        for(Post p: postList)
             postdao.insertAll(p);
-        }
 
         List<Post> l  = getPosts(db);
-        for(Post post:l){
+        for(Post post:l)
             makePost(post);
-        }
     }
 
     public void createPost(View view){
@@ -103,7 +98,7 @@ public class postFeed extends AppCompatActivity {
         Fragment fragment = textInput.newInstance(false, null);
 
         transaction.add(R.id.postCreation, fragment, "textInput");
-        transaction.addToBackStack("idkbro");
+        transaction.addToBackStack("back");
         transaction.commit();
 
     }
@@ -121,6 +116,7 @@ public class postFeed extends AppCompatActivity {
 
         Post post = new Post(user_id,content,epoch);
 
+        clearFeed();
         new Thread(()->{
 
             AppDatabase db = Room.databaseBuilder(getApplicationContext(),
@@ -128,10 +124,7 @@ public class postFeed extends AppCompatActivity {
             PostDao postdao = db.PostDao();
 
             List<Long> result = postdao.insertAll(post);
-            System.out.println("post_id = " + result.get(0));
             post.id = result.get(0).intValue();
-
-            makePost(post);
 
             JSONObject jsonPost = new JSONObject();
                 try {
@@ -147,13 +140,10 @@ public class postFeed extends AppCompatActivity {
             // Remove fragment again
             manager.popBackStack();
 
-        }).start();
-    }
+            createPostFromRemote();
 
-    // called from activity
-    public void close(View view){
-        showFeed();
-        manager.popBackStack();
+        }).start();
+
     }
 
     // called from fragment
@@ -170,9 +160,7 @@ public class postFeed extends AppCompatActivity {
         CompletableFuture<List<Post>> posts = CompletableFuture.supplyAsync(postdao::getAll);
         try {
             return posts.get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
         return null;
@@ -194,9 +182,7 @@ public class postFeed extends AppCompatActivity {
 
         feed_post fragment = feed_post.newInstance(post, reactions);
 
-        // TODO : sometimes this crashes the app, unsure as to why atm
         sManager.beginTransaction().add(R.id.postFeed, fragment, String.valueOf(post.id)).commit();
-
     }
 
     public void hideFeed(){
@@ -214,7 +200,6 @@ public class postFeed extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void makeReaction(int post_id, int type, String user_id){
         System.out.println("Reaction attempt");
-        // TODO : make in thread
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         ReactionDao reactiondao = db.ReactionDao();
@@ -285,7 +270,6 @@ public class postFeed extends AppCompatActivity {
     }
 
     public void clearFeed(){
-        // TODO : when the app shutsdown temporarily, the feed duplicates, so we either need to weed out
-        //  all bugs that cause a reload, or we need to swipe it under the rug by hiding the problem
+        ((ViewGroup)findViewById(R.id.postFeed)).removeAllViews();
     }
 }
