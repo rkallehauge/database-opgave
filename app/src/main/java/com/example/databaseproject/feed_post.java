@@ -34,12 +34,6 @@ public class feed_post extends Fragment {
     private static final String STATE_COMMENTS = "param6";
     private static final String R_ID_CC = "param7";
 
-
-    private String user_id;
-    private String content;
-    private String stamp;
-    private Integer id;
-
     private int[] reactions;
 
     public feed_post() {
@@ -116,10 +110,13 @@ public class feed_post extends Fragment {
             }
         );
 
+        //Make comment button listener
         button = viewgroup.findViewById(R.id.postComment);
         button.setOnClickListener((View view) -> {
                 flipViewVisibility(viewgroup, R.id.postReact);
                 flipViewVisibility(viewgroup, R.id.postComment);
+
+                CloseUnClosedCommentInput();
 
                 //Add text input for comment
                 FragmentManager manager = getActivity().getFragmentManager();
@@ -131,7 +128,6 @@ public class feed_post extends Fragment {
 
                 transaction.addToBackStack(String.valueOf(post_id));
                 transaction.commit();
-
             }
         );
 
@@ -139,15 +135,15 @@ public class feed_post extends Fragment {
         ImageButton b = getView().findViewById(R.id.openComments);
         b.setOnClickListener((View view) -> {
 
-                killAndUpdateComments(commentContainer,post_id);
 
                 if(args.getBoolean(STATE_COMMENTS)){
-                    getView().findViewById(commentContainer).setVisibility(View.GONE);
+                    killComments(commentContainer);
                     args.putBoolean(STATE_COMMENTS, false);
                 } else{
-                    getView().findViewById(commentContainer).setVisibility(View.VISIBLE);
+                    updateComments(commentContainer,post_id);
                     args.putBoolean(STATE_COMMENTS, true);
                 }
+
                 // Flip rotation of button
                 float r = (view.getRotation() + 180) % 360;
                 view.setRotation(r);
@@ -165,7 +161,6 @@ public class feed_post extends Fragment {
             int type = i+1;
 
             v.setOnClickListener((View view) -> {
-                    // Slightly scuffed
                     ((postFeed)getActivity()).makeReaction(post_id, type, user_id);
 
                     // Hide Reactions after reaction has been made.
@@ -176,13 +171,22 @@ public class feed_post extends Fragment {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private void killAndUpdateComments(int commentContainerId, int postId) {
+    private void killComments(int commentContainerId) {
         ViewGroup commentContainer = (ViewGroup) getView().findViewById(commentContainerId);
 
-        //Remove all existing comments
-        commentContainer.removeAllViews();
+        //Remove all existing comments except the comment creation
+        int i = 0;
+        while(i < commentContainer.getChildCount()) {
+            ViewGroup commentElement = (ViewGroup)((ViewGroup) commentContainer.getChildAt(i)).getChildAt(0);
+            //Remove element if not the comment input otherwise add 1 to i to ignore comment input
+            if(commentElement.getId() != R.id.userTextFragment)
+                commentContainer.removeView(commentContainer.getChildAt(i));
+            else i++;
+        }
 
+    }
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void updateComments(int commentContainerId, int postId) {
         //Insert all new comments
         List<Comment> comments = ((postFeed)getActivity()).getComments(postId);
 
@@ -195,6 +199,22 @@ public class feed_post extends Fragment {
                     null
             );
         t.commit();
+    }
+
+    private void CloseUnClosedCommentInput() {
+        View otherOpenComment = ((ViewGroup) getView().getParent()).findViewById(R.id.userTextFragment);
+        //If a comment is opened
+        if(otherOpenComment != null ) {
+            ViewGroup fragmentWithOpenComment = (ViewGroup) otherOpenComment.getParent().getParent();
+            ViewGroup postWithOpenComment = (ViewGroup) otherOpenComment.getParent().getParent().getParent().getParent();
+
+            //Show react and comment button
+            flipViewVisibility(postWithOpenComment, R.id.postReact);
+            flipViewVisibility(postWithOpenComment, R.id.postComment);
+
+            //Remove the opened comment textInput
+            fragmentWithOpenComment.removeView((View) otherOpenComment.getParent());
+        }
     }
 
     private void flipViewVisibility(ViewGroup v, int viewId){
@@ -223,11 +243,11 @@ public class feed_post extends Fragment {
         flipViewVisibility(viewgroup, R.id.postReact);
         flipViewVisibility(viewgroup, R.id.postComment);
 
-        killAndUpdateComments(args.getInt(R_ID_CC),post_id);
+        killComments(args.getInt(R_ID_CC));
+        updateComments(args.getInt(R_ID_CC),post_id);
     }
 
-    //TODO: This bugs when you try to comment on multiple things at once, perhaps a hideAllBut(int id) would save our lives
-    public void close(){
+   public void close(){
         ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
         flipViewVisibility(viewgroup, R.id.postReact);
         flipViewVisibility(viewgroup, R.id.postComment);
