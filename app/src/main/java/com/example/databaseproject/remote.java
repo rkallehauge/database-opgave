@@ -1,7 +1,5 @@
 package com.example.databaseproject;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,8 +8,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,26 +17,24 @@ import java.util.Scanner;
 public class remote {
 
     private static final String REMOTE_AUTH_KEY = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBwMjAyMiJ9.iEPYaqBPWoAxc7iyi507U3sexbkLHRKABQgYNDG4Awk";
+    private static final String REMOTE_URL = "http://caracal.imada.sdu.dk/app2022/";
 
-    public static JSONArray updateFromRemote(String database) {
+
+    public static JSONArray getEverythingFromRemote(String database) {
         try {
-            URL requestURL = new URL("http://caracal.imada.sdu.dk/app2022/" + database);
+            URL requestURL = new URL(REMOTE_URL + database);
             Scanner scanner = new Scanner(requestURL.openStream());
             String response = scanner.useDelimiter("\\Z").next();
             JSONArray json = new JSONArray(response);
             scanner.close();
             return json;
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private JSONArray getRemote(String database, JSONObject criteria) {
+    private JSONArray selectRemote(String database, JSONObject criteria) {
         try {
             String urlCriteria = "?";
             Iterator<String> it = criteria.keys();
@@ -48,18 +42,14 @@ public class remote {
                 String key = it.next();
                 urlCriteria = urlCriteria + key + "=eq." +criteria.get(key) + "&";
             }
-            URL url = new URL("http://caracal.imada.sdu.dk/app2022/" + encodeValue(database) + encodeValue(urlCriteria));
+            URL url = new URL(REMOTE_URL + encodeValue(database) + encodeValue(urlCriteria));
 
             Scanner scanner = new Scanner(url.openStream());
             String response = scanner.useDelimiter("\\Z").next();
             JSONArray json = new JSONArray(response);
             scanner.close();
             return  json;
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
         return new JSONArray();
@@ -67,7 +57,7 @@ public class remote {
 
     public static void insertRemote(String database, JSONObject payload) {
         try {
-            URL url = new URL("http://caracal.imada.sdu.dk/app2022/" + database);
+            URL url = new URL(REMOTE_URL + database);
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
@@ -82,11 +72,6 @@ public class remote {
             os.close();
             connection.connect();
 
-            Log.d("REMOTE", "Insert "+payloadString + " with response: " + connection.getResponseMessage());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (ProtocolException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -101,25 +86,19 @@ public class remote {
                 urlCriteria = urlCriteria + key + "=eq." +criteria.get(key) + "&";
             }
 
-            URL url = new URL("http://caracal.imada.sdu.dk/app2022/" + encodeValue(database) + encodeValue(urlCriteria));
+            URL url = new URL(REMOTE_URL + encodeValue(database) + encodeValue(urlCriteria));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("DELETE");
             connection.setRequestProperty("Authorization", REMOTE_AUTH_KEY);
 
-            Log.d("REMOTE", "Remoeved with criteria " + encodeValue(urlCriteria) + " in " + encodeValue(database) + " with response " + connection.getResponseMessage());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
+        } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
     }
 
+    //TODO: may be removed if not used
     private void updateRemote(String database, JSONObject criteria, JSONObject updates) {
-        JSONArray entries = getRemote(database,criteria);
+        JSONArray entries = selectRemote(database,criteria);
         removeRemote(database,criteria);
         for(int i = 0; i < entries.length(); i++) {
             try {

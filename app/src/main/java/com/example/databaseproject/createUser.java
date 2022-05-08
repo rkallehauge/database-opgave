@@ -5,22 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-
-
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.ProtocolException;
-import java.net.URLEncoder;
-
-
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 
@@ -32,13 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
-import java.util.Iterator;
-import java.util.Scanner;
 
 public class createUser extends AppCompatActivity {
 
@@ -57,7 +38,7 @@ public class createUser extends AppCompatActivity {
             AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
 
             //Find users from remote and insert
-            JSONArray remoteUsers = remote.updateFromRemote("users");
+            JSONArray remoteUsers = remote.getEverythingFromRemote("users");
             for(int i = 0; i < remoteUsers.length(); i++) {
                 try {
                     JSONObject entry = remoteUsers.getJSONObject(i);

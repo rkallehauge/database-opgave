@@ -173,7 +173,7 @@ public class feed_post extends Fragment {
     }
 
     private void killComments(int commentContainerId) {
-        ViewGroup commentContainer = (ViewGroup) getView().findViewById(commentContainerId);
+        ViewGroup commentContainer = getView().findViewById(commentContainerId);
 
         //Remove all existing comments except the comment creation
         int i = 0;

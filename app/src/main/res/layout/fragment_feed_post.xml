@@ -86,7 +86,7 @@
                 <!--
                 reaction image size is 48px~ square
 
-                TODO : make current reaction highlighted on load
+                TODO : make current reaction highlighted on load and match reactions to remote database:  0 for “reaction deleted”, 1 for “like”, 2 for “hate”,and 3 for “couldn’t care less”
                 -->
 
 

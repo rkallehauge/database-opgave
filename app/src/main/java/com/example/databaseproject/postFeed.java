@@ -12,11 +12,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import android.os.Build;
-import android.util.Log;
 import android.view.View;
 
 import android.view.ViewGroup;
-import android.widget.EditText;
 
 import android.os.Bundle;
 
@@ -57,7 +55,7 @@ public class postFeed extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void createPostFromRemote() {
-        JSONArray remoteUsers = remote.updateFromRemote("users");
+        JSONArray remoteUsers = remote.getEverythingFromRemote("users");
         for(int i = 0; i < remoteUsers.length(); i++) {
             try {
                 JSONObject entry = remoteUsers.getJSONObject(i);
@@ -68,7 +66,7 @@ public class postFeed extends AppCompatActivity {
             }
         }
 
-        JSONArray remotePosts = remote.updateFromRemote("posts");
+        JSONArray remotePosts = remote.getEverythingFromRemote("posts");
         List<Post> postList = new ArrayList<>();
         for(int i = 0; i < remotePosts.length(); i++) {
             try {
