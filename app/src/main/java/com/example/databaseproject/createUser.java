@@ -67,7 +67,7 @@ public class createUser extends AppCompatActivity {
         }).start();
     }
 
-    public void insertUser(String id, String name, String time, AppDatabase db) {
+    public static void insertUser(String id, String name, String time, AppDatabase db) {
         db.UserDao().insert(new User(id,name, time));
         JSONObject userEntry = new JSONObject();
         try {

@@ -1,21 +1,29 @@
 package com.example.databaseproject;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-
-import android.app.Fragment;
-
-
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,6 +42,13 @@ public class textInput extends Fragment {
     // If parent is fragment, this is the ID of that parent
     private String fragmentId;
     private FragmentActivity listener;
+
+    // One Preview Image
+    private ImageView IVPreviewImage;
+
+    // constant to compare
+    // the activity result code
+    private int SELECT_PICTURE = 200;
 
     public textInput() {
         // Required empty public constructor
@@ -109,6 +124,7 @@ public class textInput extends Fragment {
             }
         );
 
+        //Cancel button handler
         View cancelButton = getView().findViewById(R.id.inputCancel);
         cancelButton.setOnClickListener((View view) -> {
                 if(startedFromFragment)
@@ -118,5 +134,67 @@ public class textInput extends Fragment {
             }
         );
 
+        IVPreviewImage = getView().findViewById(R.id.IVPreviewImage);
+
+        //Image upload button handler
+        View imageButton = getView().findViewById(R.id.inputImage);
+        imageButton.setOnClickListener((View view) -> {
+            Intent i = new Intent();
+            i.setType("image/*");
+            i.setAction(Intent.ACTION_GET_CONTENT);
+
+            startActivityForResult(Intent.createChooser(i, "Select Picture"), SELECT_PICTURE);
+        });
+
     }
+
+    //Called method once user is returned from gallery
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+
+            System.out.println(requestCode);
+            if (requestCode == 200) if (data != null) {
+                try {
+                    InputStream inputStream = getActivity().getContentResolver().openInputStream(data.getData());
+
+                    new Thread(() -> {
+                        try {
+                            remote.uploadImage(readAllBytes(inputStream));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                    //inputStream.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    public static byte[] readAllBytes(InputStream in) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        copyAllBytes(in, out);/*w w  w . ja  v  a 2s. co m*/
+        return out.toByteArray();
+    }
+
+    public static int copyAllBytes(InputStream in, OutputStream out)
+            throws IOException {
+        int byteCount = 0;
+        byte[] buffer = new byte[4096];
+        while (true) {
+            int read = in.read(buffer);
+            if (read == -1) {
+                break;
+            }
+            out.write(buffer, 0, read);
+            byteCount += read;
+        }
+        return byteCount;
+    }
+
+
 }
