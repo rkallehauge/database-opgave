@@ -213,7 +213,7 @@ public class postFeed extends AppCompatActivity {
                 TODO : This works, but can sometimes crash the app after a clean wipe of DB,
                  it can possibly not actually be a crash, but the Layout reloads as if it were a crash
              */
-            int dbReturn = reactiondao.getReactionById(post_id,user_id);
+            int dbReturn = reactiondao.getReactionIdById(post_id,user_id);
             System.out.println(dbReturn);
                 // No current reaction exists on this post by this user
             System.out.println("post_id : " + post_id + " user_id: "+ user_id);
@@ -240,7 +240,7 @@ public class postFeed extends AppCompatActivity {
             List<Reaction> list = reactions.get();
             int[] reactionsList = {0,0,0,0};
             for(Reaction r:list){
-                reactionsList[r.type-1]++;
+                reactionsList[r.type]++;
             }
             return reactionsList;
         } catch (ExecutionException e) {
@@ -249,6 +249,23 @@ public class postFeed extends AppCompatActivity {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public int getCurrentReactionType(int post_id, String user_id){
+        ReactionDao reactiondao = Room.databaseBuilder(getApplicationContext(),
+        AppDatabase.class, "User").fallbackToDestructiveMigration().build().ReactionDao();
+        CompletableFuture<List<Reaction>> result = CompletableFuture.supplyAsync(() -> reactiondao.getReactionById(post_id, user_id));
+        try{
+            List<Reaction> reactions = result.get();
+            return reactions.get(0).type;
+        }
+        catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)

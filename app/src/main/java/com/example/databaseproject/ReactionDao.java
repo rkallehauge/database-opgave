@@ -21,7 +21,10 @@ public interface ReactionDao {
     List<Reaction> getReactions(int post_id);
 
     @Query("SELECT * FROM Reaction WHERE user_id = :user_id AND post_id = :post_id")
-    int getReactionById(int post_id, String user_id);
+    int getReactionIdById(int post_id, String user_id);
+
+    @Query("SELECT * FROM Reaction WHERE user_id = :user_id AND post_id = :post_id")
+    List<Reaction> getReactionById(int post_id, String user_id);
 
     // TODO : make userid and postid get
     // Delete reaction
