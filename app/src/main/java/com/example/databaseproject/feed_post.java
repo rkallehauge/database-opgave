@@ -81,13 +81,19 @@ public class feed_post extends Fragment {
         super.onStart();
         Bundle args = getArguments();
 
+        Post post;
+
+
         //If arguments for post are initiated
         if (getArguments() != null) {
             String uid, content, stamp;
-
+            int id;
             uid = args.getString(ARG_USERID);
             content = args.getString(ARG_CONTENT);
             stamp = args.getString(ARG_STAMP);
+            id = args.getInt(ARG_ID);
+
+            post = new Post(id,uid,content,stamp);
 
             TextView uidText = getView().findViewById(R.id.postCreator);
             uidText.setText(uid);
@@ -97,6 +103,9 @@ public class feed_post extends Fragment {
 
             TextView stampText = getView().findViewById(R.id.postStamp);
             stampText.setText(stamp);
+        } else{
+            // To soothe the IDE ( Variable might not have been initialized )
+            post = new Post();
         }
 
         ((ViewGroup)(getView().findViewById(R.id.commentWrapper))).getChildAt(0).setId(args.getInt(R_ID_CC));
@@ -172,8 +181,8 @@ public class feed_post extends Fragment {
             int type = i+1;
 
             reactionButton.setOnClickListener((View view) -> {
-                    updateReactionCount(type);
                     ((postFeed)getActivity()).makeReaction(post_id, type, user_id);
+                    updateReactionCount(post);
 
                     // Hide Reactions after reaction has been made.
                     flipViewVisibility(viewgroup, R.id.reactionImageContainer);
@@ -192,8 +201,8 @@ public class feed_post extends Fragment {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             // ""DELETE"" reaction
-                            updateReactionCount(0);
                             ((postFeed)getActivity()).makeReaction(post_id, 0, user_id);
+                            updateReactionCount(post);
                         }
                     }).setNegativeButton(android.R.string.no, null).show();
             // Close for good measure
@@ -288,53 +297,20 @@ public class feed_post extends Fragment {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void updateReactionCount(int newType){
-        Bundle args = getArguments();
-        int post_id = args.getInt(ARG_ID);
-        String user_id = args.getString(ARG_USERID);
-        int oldType = ((postFeed)getActivity()).getCurrentReactionType(post_id, user_id);
-        if(newType == oldType){
-            return;
-        }
-        ViewGroup viewgroup = getView().findViewById(R.id.reactionImageContainer);
+    public void updateReactionCount(Post post){
+        int[] reactions = ((postFeed) getActivity()).getReactions(post);
 
+        ViewGroup vg = getView().findViewById(R.id.reactionImageContainer);
+        for(int i = 1; i <= 3; i++){
+            // TODO : doesnt always syncronize 100% correctly, probably caused by delay in Database insertion
+            ViewGroup reactionCountParent = ((ViewGroup) ((ViewGroup)vg.getChildAt(i-1)).getChildAt(1));
+            TextView reactionCountCounter = (TextView) reactionCountParent.getChildAt(0);
+            reactionCountCounter.setText(String.valueOf(reactions[i]));
 
-        System.out.println("Old : " + oldType + " Newtype : " + newType);
-        System.out.println(((ViewGroup)viewgroup).getChildCount());
-        // Decrement old type
-        ViewGroup reactionCountParent;
-        int count;
-        String text;
+            TextView reactionCountPlural = (TextView) reactionCountParent.getChildAt(1);
+            String plural = ( reactions[i] > 1 || reactions[i] == 0) ? " votes" : " vote";
 
-        if(oldType != 0){
-            reactionCountParent = (ViewGroup) ((ViewGroup) (viewgroup.getChildAt(oldType-1))).getChildAt(1);
-
-            // childAt(0) is the number part
-            text = (String) ((TextView) reactionCountParent.getChildAt(0)).getText();
-            count = Integer.parseInt(text);
-            count--;
-            ((TextView) reactionCountParent.getChildAt(0)).setText(String.valueOf(count));
-
-            // childAt(1) is the string part, "Vote" or "Votes"
-            text = (count == 0 || count > 1) ? " Votes" : " Vote";
-            ((TextView) reactionCountParent.getChildAt(1)).setText(text);
-
-        }
-        // Increment new type
-        if(newType != 0){
-            // Bad code repetition, could be done in method, but fuck it who cares
-            reactionCountParent = (ViewGroup) ((ViewGroup) (viewgroup.getChildAt(newType-1))).getChildAt(1);
-
-            // childAt(0) is the number part
-            text = (String) ((TextView) reactionCountParent.getChildAt(0)).getText();
-            count = Integer.parseInt(text);
-            count--;
-            ((TextView) reactionCountParent.getChildAt(0)).setText(String.valueOf(count));
-
-            // childAt(1) is the string part, "Vote" or "Votes"
-            text = (count == 0 || count > 1) ? " Votes" : " Vote";
-            ((TextView) reactionCountParent.getChildAt(1)).setText(text);
-
+            reactionCountPlural.setText(plural);
         }
     }
 }

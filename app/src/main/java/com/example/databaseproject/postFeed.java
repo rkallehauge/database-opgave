@@ -251,22 +251,6 @@ public class postFeed extends AppCompatActivity {
         return null;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public int getCurrentReactionType(int post_id, String user_id){
-        ReactionDao reactiondao = Room.databaseBuilder(getApplicationContext(),
-        AppDatabase.class, "User").fallbackToDestructiveMigration().build().ReactionDao();
-        CompletableFuture<List<Reaction>> result = CompletableFuture.supplyAsync(() -> reactiondao.getReactionById(post_id, user_id));
-        try{
-            List<Reaction> reactions = result.get();
-            return reactions.get(0).type;
-        }
-        catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public List<Comment> getComments(int post_id){

@@ -21,12 +21,14 @@ public class remote {
 
 
     public static JSONArray getEverythingFromRemote(String database) {
+
         try {
             URL requestURL = new URL(REMOTE_URL + database);
             Scanner scanner = new Scanner(requestURL.openStream());
             String response = scanner.useDelimiter("\\Z").next();
             JSONArray json = new JSONArray(response);
             scanner.close();
+            System.out.println("This is weird : " + json);
             return json;
         } catch (JSONException | IOException e) {
             e.printStackTrace();
