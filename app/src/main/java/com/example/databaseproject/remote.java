@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -20,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -145,35 +147,44 @@ public class remote {
         }
     }
 
+    //TODO: file restriction in php
     @RequiresApi(api = Build.VERSION_CODES.O)
     public static String uploadImage(byte[] bytes) {
         try {
-            System.out.println("test");
             URL url = new URL("https://kklokker.com/databaseApp/upload.php");
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
+            connection.setRequestMethod("GET");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept", "application/json");
             connection.setDoOutput(true);
 
-            JSONObject payload = new JSONObject();
-            InputStream inputStream = new ByteArrayInputStream(bytes);
-
-            File file = new File("/tmp/output.txt");
-            Files.copy(inputStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            payload.put("image",file);
-
-            String payloadString = payload.toString();
             OutputStream os = connection.getOutputStream();
-            os.write(payloadString.getBytes(StandardCharsets.UTF_8));;
+            os.write(bytes,0,bytes.length);
             os.close();
+            //TODO: Yanky solution to read response
+            String output = readFullyAsString(connection.getInputStream(), "UTF-8");
             connection.connect();
-            System.out.println(connection.getResponseCode());
-        } catch (IOException | JSONException e) {
+            connection.disconnect();
+            return output.substring(output.indexOf("images/"),output.indexOf(".jpg")+4);
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
+    //TODO: Optimize functions
+    public static String readFullyAsString(InputStream inputStream, String encoding) throws IOException {
+        return readFully(inputStream).toString(encoding);
+    }
+
+    private static ByteArrayOutputStream readFully(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length = 0;
+        while ((length = inputStream.read(buffer)) != -1) {
+            baos.write(buffer, 0, length);
+        }
+        return baos;
+    }
 }

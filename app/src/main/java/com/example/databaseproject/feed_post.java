@@ -186,6 +186,7 @@ public class feed_post extends Fragment {
         }
 
     }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void updateComments(int commentContainerId, int postId) {
         //Insert all new comments

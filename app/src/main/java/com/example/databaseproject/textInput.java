@@ -154,10 +154,9 @@ public class textInput extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-
-            System.out.println(requestCode);
             if (requestCode == 200) if (data != null) {
                 try {
+                    IVPreviewImage.setImageURI(data.getData());
                     InputStream inputStream = getActivity().getContentResolver().openInputStream(data.getData());
 
                     new Thread(() -> {

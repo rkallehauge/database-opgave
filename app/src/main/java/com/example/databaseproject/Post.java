@@ -12,6 +12,7 @@ public class Post {
     public String user_id;
     public String content;
     public String stamp;
+    public String image;
 
     public Post(){
 
