@@ -19,6 +19,9 @@ import android.widget.TextView;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -181,7 +184,7 @@ public class feed_post extends Fragment {
             int type = i+1;
 
             reactionButton.setOnClickListener((View view) -> {
-                    ((postFeed)getActivity()).makeReaction(post_id, type, user_id);
+                    makeReaction(type);
                     updateReactionCount(post);
 
                     // Hide Reactions after reaction has been made.
@@ -201,7 +204,7 @@ public class feed_post extends Fragment {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             // ""DELETE"" reaction
-                            ((postFeed)getActivity()).makeReaction(post_id, 0, user_id);
+                            makeReaction(0);
                             updateReactionCount(post);
                         }
                     }).setNegativeButton(android.R.string.no, null).show();
@@ -312,5 +315,24 @@ public class feed_post extends Fragment {
 
             reactionCountPlural.setText(plural);
         }
+    }
+
+
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public int makeReaction(int type){
+        Bundle args = getArguments();
+        int post_id = args.getInt(ARG_ID);
+        SessionHandler sh = new SessionHandler(getContext(), "user");
+        String user_id = sh.getString("user_id");
+        CompletableFuture<Integer> result = CompletableFuture.supplyAsync( () -> ((postFeed) getActivity()).makeReaction(post_id, type, user_id));
+        try{
+            return result.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 }
