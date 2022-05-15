@@ -26,16 +26,18 @@
             <ImageView
                 android:id="@+id/IVPreviewImage"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="match_parent"
                 android:layout_below="@+id/BSelectImage"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
-                android:layout_marginEnd="16dp" />
+                android:layout_marginEnd="16dp"
+                android:visibility="invisible"/>
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/uploadImage"
                 android:id="@+id/inputImage"
+                android:visibility="invisible"
                 />
             <Button
                 android:layout_width="match_parent"

@@ -12,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import android.os.Build;
+import android.util.Log;
 import android.view.View;
 
 import android.view.ViewGroup;
@@ -87,6 +88,7 @@ public class postFeed extends AppCompatActivity {
             makePost(post);
     }
 
+    //Main feed post button
     public void createPost(View view){
 
         // Hide button and feed for now
@@ -98,12 +100,12 @@ public class postFeed extends AppCompatActivity {
         transaction.add(R.id.postCreation, fragment, "textInput");
         transaction.addToBackStack("back");
         transaction.commit();
-
     }
 
     // TODO : Find less scuffed way to handle text, possibly (hopefully ) through textInput
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void post(String content){
+    public void post(String content, String image){
+        Log.d("Post creation", "Post is being made!");
 
         // Show button again
         showFeed();
@@ -112,9 +114,10 @@ public class postFeed extends AppCompatActivity {
         String user_id = sh.getString("user_id");
         String epoch = OffsetDateTime.now().toString();
 
-        Post post = new Post(user_id,content,epoch);
+        Post post = new Post(user_id,content,epoch, image);
 
         clearFeed();
+        Log.d("Post creation", "Feed has been cleared");
         new Thread(()->{
 
             AppDatabase db = Room.databaseBuilder(getApplicationContext(),

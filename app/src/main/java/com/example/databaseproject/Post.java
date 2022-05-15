@@ -18,10 +18,11 @@ public class Post {
 
     }
 
-    public Post(String user_id, String content, String stamp){
+    public Post(String user_id, String content, String stamp, String image){
         this.user_id = user_id;
         this.content = content;
         this.stamp = stamp;
+        this.image = image;
     }
 
 

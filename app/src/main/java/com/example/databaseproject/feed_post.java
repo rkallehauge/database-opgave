@@ -2,19 +2,27 @@ package com.example.databaseproject;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -25,6 +33,7 @@ import java.util.List;
  */
 public class feed_post extends Fragment {
 
+    private static final String IMAGE_URL = "https://kklokker.com/databaseApp/";
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_USERID = "param1";
     private static final String ARG_CONTENT = "param2";
@@ -33,6 +42,7 @@ public class feed_post extends Fragment {
     private static final String ARG_REACTIONS = "param5";
     private static final String STATE_COMMENTS = "param6";
     private static final String R_ID_CC = "param7";
+    private static final String ARG_IMAGE = "param8";
 
     private int[] reactions;
 
@@ -54,6 +64,7 @@ public class feed_post extends Fragment {
         args.putIntArray(ARG_REACTIONS, reactions); //Count of reactions, index is type of reaction
         args.putBoolean(STATE_COMMENTS, false); //Comment container opening state - true if open, false if closed
         args.putInt(R_ID_CC, 20557+post.id); //Comment container id
+        args.putString(ARG_IMAGE, post.image);
         //TODO find better method for finding an id for comment part of post
 
         fragment.setArguments(args);
@@ -81,11 +92,13 @@ public class feed_post extends Fragment {
 
         //If arguments for post are initiated
         if (getArguments() != null) {
-            String uid, content, stamp;
+            Log.d("Post creation", "Post " + args.getString(ARG_USERID) + "getting initialized");
+            String uid, content, stamp, image;
 
             uid = args.getString(ARG_USERID);
             content = args.getString(ARG_CONTENT);
             stamp = args.getString(ARG_STAMP);
+            image = args.getString(ARG_IMAGE);
 
             TextView uidText = getView().findViewById(R.id.postCreator);
             uidText.setText(uid);
@@ -95,6 +108,21 @@ public class feed_post extends Fragment {
 
             TextView stampText = getView().findViewById(R.id.postStamp);
             stampText.setText(stamp);
+
+            if(image != null) {
+                new Thread(() -> {
+                    ImageView imageView = getView().findViewById(R.id.postImage);
+                    InputStream imageInput = null;
+                    try {
+                        System.out.println(IMAGE_URL + image);
+                        imageInput = new URL(IMAGE_URL + image).openStream();
+                        Bitmap bitmap = BitmapFactory.decodeStream(imageInput);
+                        imageView.setImageBitmap(bitmap);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            }
         }
 
         ((ViewGroup)(getView().findViewById(R.id.commentWrapper))).getChildAt(0).setId(args.getInt(R_ID_CC));

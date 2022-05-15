@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.FileUtils;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -162,29 +163,26 @@ public class remote {
             OutputStream os = connection.getOutputStream();
             os.write(bytes,0,bytes.length);
             os.close();
+            Log.d("Post creation", "Image is being uploaded");
             //TODO: Yanky solution to read response
-            String output = readFullyAsString(connection.getInputStream(), "UTF-8");
+            String output = readFully(connection.getInputStream());
             connection.connect();
             connection.disconnect();
-            return output.substring(output.indexOf("images/"),output.indexOf(".jpg")+4);
+            String imageName = output.substring(output.indexOf("images/"),output.indexOf(".jpg")+4);
+            Log.d("Post creation", "Image is uploaded with the following name " + imageName);
+            return imageName;
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    //TODO: Optimize functions
-    public static String readFullyAsString(InputStream inputStream, String encoding) throws IOException {
-        return readFully(inputStream).toString(encoding);
-    }
-
-    private static ByteArrayOutputStream readFully(InputStream inputStream) throws IOException {
+    private static String readFully(InputStream inputStream) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int length = 0;
-        while ((length = inputStream.read(buffer)) != -1) {
+        while ((length = inputStream.read(buffer)) != -1)
             baos.write(buffer, 0, length);
-        }
-        return baos;
+        return baos.toString();
     }
 }

@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +20,16 @@ import androidx.fragment.app.FragmentActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -48,7 +55,9 @@ public class textInput extends Fragment {
 
     // constant to compare
     // the activity result code
-    private int SELECT_PICTURE = 200;
+    private final int SELECT_PICTURE = 200;
+
+    private Uri imagePath;
 
     public textInput() {
         // Required empty public constructor
@@ -113,16 +122,30 @@ public class textInput extends Fragment {
         // Post button handler
         View postButton = getView().findViewById(R.id.inputPost);
         postButton.setOnClickListener((View view) -> {
-                String input = ((EditText) getView().findViewById(R.id.userTextInput)).getText().toString();
+            Log.d("Post creation", "Postbutton pushed");
+
+            String input = ((EditText) getView().findViewById(R.id.userTextInput)).getText().toString();
+            //If imagePath is not null it is a post and not comment
+            if(imagePath != null)
+                try {
+                    InputStream inputStream = getActivity().getContentResolver().openInputStream(imagePath);
+                    byte[] imageBytes = readAllBytes(inputStream);
+                    CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> remote.uploadImage(imageBytes));
+                    ((postFeed) getActivity()).post(input, future.get());
+                } catch (IOException | ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            //No image is given therefore information if needs to be found if the post is comment or a post with only text
+            else {
                 //Fragment is parent when a comment is posted
-                if(getArguments().getBoolean(PARENT_IS_FRAGMENT)){
+                if (getArguments().getBoolean(PARENT_IS_FRAGMENT)) {
                     // Find parent fragment
                     ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).post(input);
                     getFragmentManager().popBackStack();
-                } else
-                    ((postFeed)getActivity()).post(input);
+                }
+                else ((postFeed) getActivity()).post(input, null);
             }
-        );
+        });
 
         //Cancel button handler
         View cancelButton = getView().findViewById(R.id.inputCancel);
@@ -145,7 +168,11 @@ public class textInput extends Fragment {
 
             startActivityForResult(Intent.createChooser(i, "Select Picture"), SELECT_PICTURE);
         });
-
+        //Make image and image button visible if it is a post creation
+        if(!getArguments().getBoolean(PARENT_IS_FRAGMENT)) {
+            IVPreviewImage.setVisibility(View.VISIBLE);
+            imageButton.setVisibility(View.VISIBLE);
+        }
     }
 
     //Called method once user is returned from gallery
@@ -153,42 +180,25 @@ public class textInput extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK)
             if (requestCode == 200) if (data != null) {
-                try {
                     IVPreviewImage.setImageURI(data.getData());
-                    InputStream inputStream = getActivity().getContentResolver().openInputStream(data.getData());
-
-                    new Thread(() -> {
-                        try {
-                            remote.uploadImage(readAllBytes(inputStream));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
-                    //inputStream.close();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    imagePath = data.getData();
             }
-        }
     }
     public static byte[] readAllBytes(InputStream in) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        copyAllBytes(in, out);/*w w  w . ja  v  a 2s. co m*/
+        copyAllBytes(in, out);
         return out.toByteArray();
     }
 
-    public static int copyAllBytes(InputStream in, OutputStream out)
-            throws IOException {
+    public static int copyAllBytes(InputStream in, OutputStream out) throws IOException {
         int byteCount = 0;
         byte[] buffer = new byte[4096];
         while (true) {
             int read = in.read(buffer);
-            if (read == -1) {
-                break;
-            }
+            if (read == -1) break;
+
             out.write(buffer, 0, read);
             byteCount += read;
         }
