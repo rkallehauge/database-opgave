@@ -58,7 +58,7 @@ public class createUser extends AppCompatActivity {
             else{
                 ((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
             }
-
+            System.out.println("Something went righht");
             //Insert userId to sessionHandler
             sh.putString("user_id", id);
             finish();

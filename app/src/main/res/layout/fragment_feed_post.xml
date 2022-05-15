@@ -119,11 +119,22 @@
                             android:src="@drawable/ic_pog"
                             android:tag="@+tag/reactionButton"
                         />
-                        <TextView
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:tag="@+tag/reactionCount"
-                        />
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:tag="@+tag/reactionCount"
+                                android:text="@string/placeholderText"
+                                />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/placeholderText"
+                                />
+                        </LinearLayout>
                     </LinearLayout>
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -138,11 +149,22 @@
                             android:src="@drawable/ic_cringe"
                             android:tag="@+tag/reactionButton"
                             />
-                        <TextView
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:tag="@+tag/reactionCount"
-                            />
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:tag="@+tag/reactionCount"
+                                android:text="@string/placeholderText"
+                                />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/placeholderText"
+                                />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
@@ -158,12 +180,37 @@
                             android:src="@drawable/ic_indifferent"
                             android:tag="@+tag/reactionButton"
                             />
-                        <TextView
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:tag="@+tag/reactionCount"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:tag="@+tag/reactionCount"
+                                android:text="@string/placeholderText"
                             />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/placeholderText"
+                                />
+                        </LinearLayout>
+
                     </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        >
+                        <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@android:drawable/ic_menu_delete"
+                        />
+                    </LinearLayout>
+
 
                 </LinearLayout>
 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import android.os.Build;
 import android.util.Log;
@@ -199,13 +200,15 @@ public class postFeed extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void makeReaction(int post_id, int type, String user_id){
+    public int makeReaction(int post_id, int type, String user_id){
+
+
         System.out.println("Reaction attempt");
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         ReactionDao reactiondao = db.ReactionDao();
         String stamp = OffsetDateTime.now().toString();
-        new Thread(()->{
+
 
             Reaction reaction = new Reaction();
             reaction.post_id = post_id;
@@ -216,7 +219,7 @@ public class postFeed extends AppCompatActivity {
                 TODO : This works, but can sometimes crash the app after a clean wipe of DB,
                  it can possibly not actually be a crash, but the Layout reloads as if it were a crash
              */
-            int dbReturn = reactiondao.getReactionById(post_id,user_id);
+            int dbReturn = reactiondao.getReactionIdById(post_id,user_id);
             System.out.println(dbReturn);
                 // No current reaction exists on this post by this user
             System.out.println("post_id : " + post_id + " user_id: "+ user_id);
@@ -229,7 +232,7 @@ public class postFeed extends AppCompatActivity {
                 reactiondao.insertReactions(reaction);
             }
             db.close();
-        }).start();
+            return 1;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -243,7 +246,7 @@ public class postFeed extends AppCompatActivity {
             List<Reaction> list = reactions.get();
             int[] reactionsList = {0,0,0,0};
             for(Reaction r:list){
-                reactionsList[r.type-1]++;
+                reactionsList[r.type]++;
             }
             return reactionsList;
         } catch (ExecutionException e) {
@@ -253,6 +256,7 @@ public class postFeed extends AppCompatActivity {
         }
         return null;
     }
+
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public List<Comment> getComments(int post_id){
