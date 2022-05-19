@@ -57,36 +57,47 @@ public class postFeed extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void createPostFromRemote() {
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         JSONArray remoteUsers = remote.getEverythingFromRemote("users");
-        for(int i = 0; i < remoteUsers.length(); i++) {
+         for(int i = 0; i < remoteUsers.length(); i++) {
             try {
                 JSONObject entry = remoteUsers.getJSONObject(i);
-                AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
                 db.UserDao().insert(new User(entry.getString("id"), entry.getString("name"),entry.getString("stamp")));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-
+        System.out.println("done1");
         JSONArray remotePosts = remote.getEverythingFromRemote("posts");
-        List<Post> postList = new ArrayList<>();
+        PostDao postdao = db.PostDao();
         for(int i = 0; i < remotePosts.length(); i++) {
             try {
                 JSONObject entry = remotePosts.getJSONObject(i);
-                postList.add(new Post(entry.getInt("id"),entry.getString("user_id"),entry.getString("content"),entry.getString("stamp")));
+                postdao.insertAll(new Post(entry.getInt("id"),entry.getString("user_id"),entry.getString("content"),entry.getString("stamp")));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "User").fallbackToDestructiveMigration().build();
-        PostDao postdao = db.PostDao();
-        for(Post p: postList)
-            postdao.insertAll(p);
+        System.out.println("done2");
+
+        JSONArray remoteReactions = remote.getEverythingFromRemote("reactions");
+
+        ReactionDao reactdao = db.ReactionDao();
+        for(int i = 0; i < remoteReactions.length(); i++) {
+            try {
+                JSONObject entry = remoteReactions.getJSONObject(i);
+                reactdao.insertReactions(new Reaction(entry.getInt("post_id"), entry.getString("user_id"),entry.getInt("type"),entry.getString("stamp")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("done3");
 
         List<Post> l  = getPosts(db);
         for(Post post:l)
             makePost(post);
+
+
     }
 
     //Main feed post button
@@ -210,11 +221,18 @@ public class postFeed extends AppCompatActivity {
         String stamp = OffsetDateTime.now().toString();
 
 
-            Reaction reaction = new Reaction();
-            reaction.post_id = post_id;
-            reaction.user_id = user_id;
-            reaction.type = type;
-            reaction.stamp = stamp;
+            Reaction reaction = new Reaction(post_id, user_id, type, stamp);
+
+            JSONObject JSONReaction = new JSONObject();
+        try {
+            JSONReaction.put("user_id",user_id);
+            JSONReaction.put("post_id",post_id);
+            JSONReaction.put("type",type);
+            JSONReaction.put("stamp",stamp);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
             /*
                 TODO : This works, but can sometimes crash the app after a clean wipe of DB,
                  it can possibly not actually be a crash, but the Layout reloads as if it were a crash
@@ -226,10 +244,19 @@ public class postFeed extends AppCompatActivity {
             if(dbReturn != 0){
                 System.out.println("Existing reaction updated");
                 reactiondao.updateReaction(post_id,user_id,type);
-            // Update reac
+                //Update remote
+                try {
+                    JSONReaction.remove("type");
+                    JSONReaction.remove("stamp");
+                    remote.updateRemote("reactions",JSONReaction,new JSONObject().put("type",type));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                // Update reac
             } else{
                 System.out.println("New reaction posted");
                 reactiondao.insertReactions(reaction);
+                remote.insertRemote("reactions",JSONReaction);
             }
             db.close();
             return 1;

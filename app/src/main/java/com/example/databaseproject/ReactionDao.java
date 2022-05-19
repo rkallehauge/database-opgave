@@ -3,6 +3,7 @@ package com.example.databaseproject;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
 import java.util.List;
@@ -10,11 +11,8 @@ import java.util.List;
 @Dao
 public interface ReactionDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertReactions(Reaction... reactions);
-
-    @Query("INSERT INTO Reaction (post_id, user_id, stamp, type) VALUES( :post_id,:user_id,:stamp,:type)")
-    void insert(int post_id, String user_id, String stamp, int type);
 
     // Get reactions of post
     @Query("SELECT * FROM Reaction WHERE post_id = :post_id")

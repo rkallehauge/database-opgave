@@ -22,4 +22,13 @@ public class Reaction {
 
     public int type;
     public String stamp;
+
+    public Reaction(){}
+
+    public Reaction(int pID,String uID, int type, String stamp) {
+        this.post_id = pID;
+        this.user_id = uID;
+        this.type = type;
+        this.stamp = stamp;
+    }
 }

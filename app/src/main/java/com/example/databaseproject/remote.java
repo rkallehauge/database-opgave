@@ -52,7 +52,6 @@ public class remote {
             String response = scanner.useDelimiter("\\Z").next();
             JSONArray json = new JSONArray(response);
             scanner.close();
-            System.out.println("This is weird : " + json);
             return json;
         } catch (JSONException | IOException e) {
             e.printStackTrace();
@@ -60,7 +59,7 @@ public class remote {
         return null;
     }
 
-    private JSONArray selectRemote(String database, JSONObject criteria) {
+    private static JSONArray selectRemote(String database, JSONObject criteria) {
         try {
             String urlCriteria = "?";
             Iterator<String> it = criteria.keys();
@@ -68,7 +67,7 @@ public class remote {
                 String key = it.next();
                 urlCriteria = urlCriteria + key + "=eq." + criteria.get(key) + "&";
             }
-            URL url = new URL(REMOTE_URL + encodeValue(database) + encodeValue(urlCriteria));
+            URL url = new URL(REMOTE_URL + database + urlCriteria);
 
             Scanner scanner = new Scanner(url.openStream());
             String response = scanner.useDelimiter("\\Z").next();
@@ -97,7 +96,7 @@ public class remote {
             os.write(payloadString.getBytes(StandardCharsets.UTF_8));
             os.close();
             connection.connect();
-
+            Log.d("Insert remote", connection.getResponseMessage());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,18 +111,19 @@ public class remote {
                 urlCriteria = urlCriteria + key + "=eq." + criteria.get(key) + "&";
             }
 
-            URL url = new URL(REMOTE_URL + encodeValue(database) + encodeValue(urlCriteria));
+            URL url = new URL(REMOTE_URL + database + urlCriteria);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("DELETE");
             connection.setRequestProperty("Authorization", REMOTE_AUTH_KEY);
+            connection.connect();
+            Log.d("Remove remote",connection.getResponseMessage());
 
         } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
     }
 
-    //TODO: may be removed if not used
-    private void updateRemote(String database, JSONObject criteria, JSONObject updates) {
+    public static void updateRemote(String database, JSONObject criteria, JSONObject updates) {
         JSONArray entries = selectRemote(database, criteria);
         removeRemote(database, criteria);
         for (int i = 0; i < entries.length(); i++) {
@@ -140,14 +140,6 @@ public class remote {
             }
         }
 
-    }
-
-    private static String encodeValue(String value) {
-        try {
-            return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex.getCause());
-        }
     }
 
     //TODO: file restriction in php
