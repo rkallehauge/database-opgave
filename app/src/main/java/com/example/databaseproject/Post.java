@@ -12,17 +12,15 @@ public class Post {
     public String user_id;
     public String content;
     public String stamp;
-    public String image;
 
     public Post(){
 
     }
 
-    public Post(String user_id, String content, String stamp, String image){
+    public Post(String user_id, String content, String stamp){
         this.user_id = user_id;
         this.content = content;
         this.stamp = stamp;
-        this.image = image;
     }
 
 

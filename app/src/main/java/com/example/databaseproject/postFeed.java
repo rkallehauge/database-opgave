@@ -67,7 +67,6 @@ public class postFeed extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        System.out.println("done1");
         JSONArray remotePosts = remote.getEverythingFromRemote("posts");
         PostDao postdao = db.PostDao();
         for(int i = 0; i < remotePosts.length(); i++) {
@@ -78,7 +77,6 @@ public class postFeed extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        System.out.println("done2");
 
         JSONArray remoteReactions = remote.getEverythingFromRemote("reactions");
 
@@ -91,7 +89,6 @@ public class postFeed extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        System.out.println("done3");
 
         List<Post> l  = getPosts(db);
         for(Post post:l)
@@ -126,7 +123,7 @@ public class postFeed extends AppCompatActivity {
         String user_id = sh.getString("user_id");
         String epoch = OffsetDateTime.now().toString();
 
-        Post post = new Post(user_id,content,epoch, image);
+        Post post = new Post(user_id,content,epoch);
 
         clearFeed();
         Log.d("Post creation", "Feed has been cleared");
@@ -139,6 +136,8 @@ public class postFeed extends AppCompatActivity {
             List<Long> result = postdao.insertAll(post);
             post.id = result.get(0).intValue();
 
+            if(image != null)
+                db.ImageAttachmentDao().insert(post.id,image);
             JSONObject jsonPost = new JSONObject();
                 try {
                     jsonPost.put("id",result.get(0));
@@ -248,7 +247,7 @@ public class postFeed extends AppCompatActivity {
                 try {
                     JSONReaction.remove("type");
                     JSONReaction.remove("stamp");
-                    remote.updateRemote("reactions",JSONReaction,new JSONObject().put("type",type));
+                    remote.updateRemote("reactions",JSONReaction,new JSONObject().put("type",type).put("stamp",stamp));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

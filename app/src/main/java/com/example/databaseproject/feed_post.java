@@ -11,6 +11,7 @@ import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.room.Room;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,7 +46,6 @@ public class feed_post extends Fragment {
     private static final String ARG_REACTIONS = "param5";
     private static final String STATE_COMMENTS = "param6";
     private static final String R_ID_CC = "param7";
-    private static final String ARG_IMAGE = "param8";
 
     private int[] reactions;
 
@@ -67,7 +67,6 @@ public class feed_post extends Fragment {
         args.putIntArray(ARG_REACTIONS, reactions); //Count of reactions, index is type of reaction
         args.putBoolean(STATE_COMMENTS, false); //Comment container opening state - true if open, false if closed
         args.putInt(R_ID_CC, 20557+post.id); //Comment container id
-        args.putString(ARG_IMAGE, post.image);
         //TODO find better method for finding an id for comment part of post
 
         fragment.setArguments(args);
@@ -99,13 +98,12 @@ public class feed_post extends Fragment {
         //If arguments for post are initiated
         if (getArguments() != null) {
             Log.d("Post creation", "Post " + args.getString(ARG_USERID) + "getting initialized");
-            String uid, content, stamp, image;
+            String uid, content, stamp;
             int id;
 
             uid = args.getString(ARG_USERID);
             content = args.getString(ARG_CONTENT);
             stamp = args.getString(ARG_STAMP);
-            image = args.getString(ARG_IMAGE);
             id = args.getInt(ARG_ID);
 
             post = new Post(id,uid,content,stamp);
@@ -119,9 +117,10 @@ public class feed_post extends Fragment {
             TextView stampText = getView().findViewById(R.id.postStamp);
             stampText.setText(stamp);
 
-
-            if(image != null) {
-                new Thread(() -> {
+            new Thread(() -> {
+                AppDatabase db = Room.databaseBuilder(getContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+                String image = db.ImageAttachmentDao().path(id);
+                if(image != null) {
                     ImageView imageView = getView().findViewById(R.id.postImage);
                     InputStream imageInput = null;
                     try {
@@ -131,8 +130,9 @@ public class feed_post extends Fragment {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }).start();
-            }
+                }
+            }).start();
+
         } else{
             // To soothe the IDE ( Variable might not have been initialized )
             post = new Post();
