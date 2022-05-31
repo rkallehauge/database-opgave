@@ -28,7 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class postFeed extends AppCompatActivity {
+public class feed extends AppCompatActivity {
 
     // For interacting with fragment types, literal fragments
     FragmentManager manager;
@@ -43,11 +43,10 @@ public class postFeed extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Fragment fragment
+        // Fragment fragment // only supports fragment type Fragment
         manager = getFragmentManager();
 
-        // feed_post
-        // post_reaction
+        // (post_reaction) fragment // supports all fragments that are extended from Fragment
         sManager = getSupportFragmentManager();
 
         setContentView(R.layout.activity_post_creation);
@@ -95,9 +94,10 @@ public class postFeed extends AppCompatActivity {
         // Hide button and feed for now
         hideFeed();
 
+        // Instantiates textInput fragment
         FragmentTransaction transaction = manager.beginTransaction();
         Fragment fragment = textInput.newInstance(false, null);
-
+        // Add fragment to view
         transaction.add(R.id.postCreation, fragment, "textInput");
         transaction.addToBackStack("back");
         transaction.commit();
@@ -105,10 +105,10 @@ public class postFeed extends AppCompatActivity {
 
     // TODO : Find less scuffed way to handle text, possibly (hopefully ) through textInput
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void post(String content, String image){
+    public void comment(String content, String image){
         Log.d("Post creation", "Post is being made!");
 
-        // Show button again
+        // Show button and feed once comment has been made
         showFeed();
 
         SessionHandler sh = new SessionHandler(this,"user");
@@ -152,7 +152,6 @@ public class postFeed extends AppCompatActivity {
     public void close(String id){
         manager.popBackStack();
         // Show reactionContainer again
-
         showFeed();
     }
 
@@ -178,12 +177,11 @@ public class postFeed extends AppCompatActivity {
         }).start();
     }
 
+    // Instantiates new feed_post fragment, and inserts fragment into view
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void makePost(Post post){
         int[] reactions = getReactions(post);
-
         feed_post fragment = feed_post.newInstance(post, reactions);
-
         sManager.beginTransaction().add(R.id.postFeed, fragment, String.valueOf(post.id)).commit();
     }
 
@@ -203,7 +201,6 @@ public class postFeed extends AppCompatActivity {
     public int makeReaction(int post_id, int type, String user_id){
 
 
-        System.out.println("Reaction attempt");
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         ReactionDao reactiondao = db.ReactionDao();
@@ -220,16 +217,16 @@ public class postFeed extends AppCompatActivity {
                  it can possibly not actually be a crash, but the Layout reloads as if it were a crash
              */
             int dbReturn = reactiondao.getReactionIdById(post_id,user_id);
-            System.out.println(dbReturn);
                 // No current reaction exists on this post by this user
-            System.out.println("post_id : " + post_id + " user_id: "+ user_id);
+
             if(dbReturn != 0){
-                System.out.println("Existing reaction updated");
                 reactiondao.updateReaction(post_id,user_id,type);
-            // Update reac
+                Log.d("Comment", "Updated existing reaction");
+            // Update reaction
             } else{
                 System.out.println("New reaction posted");
                 reactiondao.insertReactions(reaction);
+                Log.d("Comment", "New reaction posted");
             }
             db.close();
             return 1;
@@ -240,10 +237,11 @@ public class postFeed extends AppCompatActivity {
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         ReactionDao reactiondao = db.ReactionDao();
-        // hopefully this shitcode works
+
         CompletableFuture<List<Reaction>> reactions = CompletableFuture.supplyAsync(() -> reactiondao.getReactions(post.id));
         try{
             List<Reaction> list = reactions.get();
+            // 4 types of reactions, same type as index, deleted are on index 0, type 1 is index 1 and so forth
             int[] reactionsList = {0,0,0,0};
             for(Reaction r:list){
                 reactionsList[r.type]++;

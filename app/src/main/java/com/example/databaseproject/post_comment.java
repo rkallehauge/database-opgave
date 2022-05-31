@@ -23,11 +23,6 @@ public class post_comment extends Fragment {
     private static final String ARG_POSTID = "param3";
     private static final String ARG_STAMP = "param4";
 
-    // TODO: Rename and change types of parameters
-    private String content;
-    private String user_id;
-    private int post_id;
-
     public post_comment() {
         // Required empty public constructor
     }
@@ -62,12 +57,14 @@ public class post_comment extends Fragment {
     public void onStart() {
         super.onStart();
         if(getArguments() != null){
+
+            // Get arguments set in constructor
             Bundle args = getArguments();
             String content = args.getString(ARG_CONTENT);
             String user_id = args.getString(ARG_USERID);
-            int post_id = args.getInt(ARG_POSTID);
             String stamp = args.getString(ARG_STAMP);
 
+            // Update placeholder text into actual content
             ((TextView) getView().findViewById(R.id.commentContent)).setText(content);
             ((TextView) getView().findViewById(R.id.commentCreator)).setText(user_id);
             ((TextView) getView().findViewById(R.id.commentStamp)).setText(stamp);

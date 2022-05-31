@@ -22,14 +22,8 @@ public class SessionHandler extends AppCompatActivity {
         editor.commit();
     }
 
-    public void putInt(String key, int value){
-        editor.putInt(key,value);
-        editor.commit();
-    }
-
     public String getString(String key){
         return sp.getString(key, null);
     }
-    public int getInt(String key) { return sp.getInt(key, -1); }
 
 }

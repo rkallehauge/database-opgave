@@ -24,7 +24,7 @@
             android:exported="true">
         </activity>
         <activity
-            android:name=".postFeed"
+            android:name=".feed"
             android:exported="true"
             ></activity>
     </application>
