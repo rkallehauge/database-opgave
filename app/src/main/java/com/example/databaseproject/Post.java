@@ -13,10 +13,10 @@ public class Post {
     public String content;
     public String stamp;
 
-    public Post(){
+    //Empty constructor
+    public Post(){}
 
-    }
-
+    //Constructor
     public Post(String user_id, String content, String stamp){
         this.user_id = user_id;
         this.content = content;

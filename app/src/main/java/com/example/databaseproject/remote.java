@@ -43,11 +43,14 @@ public class remote {
     private static final String REMOTE_AUTH_KEY = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBwMjAyMiJ9.iEPYaqBPWoAxc7iyi507U3sexbkLHRKABQgYNDG4Awk";
     private static final String REMOTE_URL = "http://caracal.imada.sdu.dk/app2022/";
 
-
-    public static JSONArray getEverythingFromRemote(String database) {
-
+    /**
+     * Get every entry from the given remote table
+     * @param table The table which everything is selected
+     * @return A JSON array of elements
+     */
+    public static JSONArray getEverythingFromRemote(String table) {
         try {
-            URL requestURL = new URL(REMOTE_URL + database);
+            URL requestURL = new URL(REMOTE_URL + table);
             Scanner scanner = new Scanner(requestURL.openStream());
             String response = scanner.useDelimiter("\\Z").next();
             JSONArray json = new JSONArray(response);
@@ -59,15 +62,15 @@ public class remote {
         return null;
     }
 
-    private static JSONArray selectRemote(String database, JSONObject criteria) {
+    /**
+     * Creates a select on the remote table, with the given criterias given in the JSON object
+     * @param table The table of which the select is made
+     * @param criteria The criteria which the select constraints
+     * @return A JSON array which contains returned rows
+     */
+    private static JSONArray selectRemote(String table, JSONObject criteria) {
         try {
-            String urlCriteria = "?";
-            Iterator<String> it = criteria.keys();
-            while (it.hasNext()) {
-                String key = it.next();
-                urlCriteria = urlCriteria + key + "=eq." + criteria.get(key) + "&";
-            }
-            URL url = new URL(REMOTE_URL + database + urlCriteria);
+            URL url = criteriaURL(criteria,table);
 
             Scanner scanner = new Scanner(url.openStream());
             String response = scanner.useDelimiter("\\Z").next();
@@ -80,9 +83,14 @@ public class remote {
         return new JSONArray();
     }
 
-    public static void insertRemote(String database, JSONObject payload) {
+    /**
+     * Inserts the given payload into the wanted table in remote
+     * @param table The table fo which the payload is inserted
+     * @param payload The item which is inserted into the table in a JSONObject
+     */
+    public static void insertRemote(String table, JSONObject payload) {
         try {
-            URL url = new URL(REMOTE_URL + database);
+            URL url = new URL(REMOTE_URL + table);
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
@@ -102,7 +110,32 @@ public class remote {
         }
     }
 
-    public static void removeRemote(String database, JSONObject criteria) {
+    /**
+     * Removes every row in the remote table which meets the criteria
+     * @param table The table of the remote database which the remove should be done
+     * @param criteria The criteria which the rows which are removed should meet
+     */
+    public static void removeRemote(String table, JSONObject criteria) {
+        try {
+            URL url = criteriaURL(criteria,table);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("DELETE");
+            connection.setRequestProperty("Authorization", REMOTE_AUTH_KEY);
+            connection.connect();
+            Log.d("Remove remote",connection.getResponseMessage());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Creates a URL to the remote table with the criteria
+     * @param criteria The criteria which the select uses
+     * @param table The table the select is made upon
+     * @return An URL object with the url of the select
+     */
+    private static URL criteriaURL(JSONObject criteria, String table) {
         try {
             String urlCriteria = "?";
             Iterator<String> it = criteria.keys();
@@ -110,22 +143,23 @@ public class remote {
                 String key = it.next();
                 urlCriteria = urlCriteria + key + "=eq." + criteria.get(key) + "&";
             }
-
-            URL url = new URL(REMOTE_URL + database + urlCriteria);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("DELETE");
-            connection.setRequestProperty("Authorization", REMOTE_AUTH_KEY);
-            connection.connect();
-            Log.d("Remove remote",connection.getResponseMessage());
-
-        } catch (JSONException | IOException e) {
+            return new URL(REMOTE_URL + table + urlCriteria);
+        } catch (JSONException | MalformedURLException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
-    public static void updateRemote(String database, JSONObject criteria, JSONObject updates) {
-        JSONArray entries = selectRemote(database, criteria);
-        removeRemote(database, criteria);
+    /**
+     * Updates the remote table by first selecting with criteria, removing with criteria
+     * and updating the selected to then insert
+     * @param table The table of the remote database
+     * @param criteria The criteria which the update
+     * @param updates The updated value on the rows
+     */
+    public static void updateRemote(String table, JSONObject criteria, JSONObject updates) {
+        JSONArray entries = selectRemote(table, criteria);
+        removeRemote(table, criteria);
         for (int i = 0; i < entries.length(); i++) {
             try {
                 JSONObject entry = entries.getJSONObject(i);
@@ -134,15 +168,18 @@ public class remote {
                     String key = it.next();
                     entry.put(key, updates.get(key));
                 }
-                insertRemote(database, entry);
+                insertRemote(table, entry);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-
     }
 
-    //TODO: file restriction in php
+    /**
+     * Uploads the selected image to the remote server
+     * @param bytes Byte array representing the image
+     * @return the given filename in remote
+     */
     @RequiresApi(api = Build.VERSION_CODES.O)
     public static String uploadImage(byte[] bytes) {
         try {
@@ -158,7 +195,8 @@ public class remote {
             os.write(bytes,0,bytes.length);
             os.close();
             Log.d("Post creation", "Image is being uploaded");
-            //TODO: Yanky solution to read response
+
+            //Searched for the image name in response
             String output = readFully(connection.getInputStream());
             connection.connect();
             connection.disconnect();
@@ -171,6 +209,12 @@ public class remote {
         return null;
     }
 
+    /**
+     * Reads the whole response to the upload
+     * @param inputStream The input stream which response
+     * @return String of whole response message
+     * @throws IOException
+     */
     private static String readFully(InputStream inputStream) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];

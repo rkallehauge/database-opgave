@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 public class autoLogin extends AppCompatActivity {
 
@@ -27,14 +28,11 @@ public class autoLogin extends AppCompatActivity {
         String user_id = sh.getString("user_id");
 
         if(user_id != null){
-            System.out.println("user_id" + user_id);
-            System.out.println("Session successfully gotten");
+            Log.d("Session","Logged in as: " + user_id);
             Intent intent = new Intent(this, postFeed.class);
             startActivity(intent);
-
         } else{
             // No session found, send user to user creation
-            System.out.println("Session NOT gotten");
             Intent intent = new Intent(this, createUser.class);
             startActivity(intent);
         }

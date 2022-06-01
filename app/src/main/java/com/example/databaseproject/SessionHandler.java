@@ -17,19 +17,23 @@ public class SessionHandler extends AppCompatActivity {
         this.editor = sp.edit();
     }
 
+    /**
+     * Updates key with value in session
+     * @param key key which value is updated
+     * @param value the new value for the key
+     */
     public void putString(String key, String value){
         editor.putString(key,value);
         editor.commit();
     }
 
-    public void putInt(String key, int value){
-        editor.putInt(key,value);
-        editor.commit();
-    }
-
+    /**
+     * Getter for a key value
+     * @param key the key of which the value is returned
+     * @return the value of the key
+     */
     public String getString(String key){
         return sp.getString(key, null);
     }
-    public int getInt(String key) { return sp.getInt(key, -1); }
 
 }

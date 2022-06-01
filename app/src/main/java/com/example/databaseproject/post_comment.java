@@ -14,6 +14,7 @@ import android.widget.TextView;
  * Use the {@link post_comment#newInstance} factory method to
  * create an instance of this fragment.
  */
+//TODO: Is there not a better way than first create an emtpy comment and then insert text?
 public class post_comment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
@@ -22,11 +23,6 @@ public class post_comment extends Fragment {
     private static final String ARG_USERID = "param2";
     private static final String ARG_POSTID = "param3";
     private static final String ARG_STAMP = "param4";
-
-    // TODO: Rename and change types of parameters
-    private String content;
-    private String user_id;
-    private int post_id;
 
     public post_comment() {
         // Required empty public constructor
@@ -47,8 +43,6 @@ public class post_comment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-        }
     }
 
     @Override
@@ -65,7 +59,6 @@ public class post_comment extends Fragment {
             Bundle args = getArguments();
             String content = args.getString(ARG_CONTENT);
             String user_id = args.getString(ARG_USERID);
-            int post_id = args.getInt(ARG_POSTID);
             String stamp = args.getString(ARG_STAMP);
 
             ((TextView) getView().findViewById(R.id.commentContent)).setText(content);

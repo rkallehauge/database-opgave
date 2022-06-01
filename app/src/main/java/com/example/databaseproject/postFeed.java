@@ -33,10 +33,8 @@ public class postFeed extends AppCompatActivity {
     // For interacting with fragment types, literal fragments
     FragmentManager manager;
 
-
     // for interacting with descendants of fragment, e.g feed_post
     androidx.fragment.app.FragmentManager sManager;
-
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override

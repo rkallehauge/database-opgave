@@ -8,6 +8,7 @@ import androidx.room.Room;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 
@@ -30,6 +31,10 @@ public class createUser extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
+    /**
+     * Method for trying to create user from login, is called by create button
+     * @param view The current view with the input fields
+     */
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void tryInsert(View view) {
         SessionHandler sh = new SessionHandler(this,"user");
@@ -42,7 +47,7 @@ public class createUser extends AppCompatActivity {
             for(int i = 0; i < remoteUsers.length(); i++) {
                 try {
                     JSONObject entry = remoteUsers.getJSONObject(i);
-                    insertUser(entry.getString("id"), entry.getString("name"),entry.getString("stamp"),db);
+                    insertUser(new User(entry.getString("id"), entry.getString("name"),entry.getString("stamp")),db);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -52,34 +57,45 @@ public class createUser extends AppCompatActivity {
             //Insert user if not used
             if(!isUsedId(id,db)) {
                 String name = ((EditText) findViewById(R.id.userNameInput)).getText().toString();
-                insertUser(id,name, OffsetDateTime.now().toString(),db);
+                Log.d("User creation", "A user was created with id: " + id + " and name: " + name);
+                insertUser(new User(id,name, OffsetDateTime.now().toString()),db);
             }
             //Show error message if already used
             else{
                 ((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
             }
-            System.out.println("Something went righht");
+
             //Insert userId to sessionHandler
             sh.putString("user_id", id);
             finish();
 
-
         }).start();
     }
 
-    public static void insertUser(String id, String name, String time, AppDatabase db) {
-        db.UserDao().insert(new User(id,name, time));
+    /**
+     * Inserts the user into the local database and the remote database
+     * @param user The user which is inserted
+     * @param db Reference to the local database
+     */
+    public void insertUser(User user, AppDatabase db) {
+        db.UserDao().insert(user);
         JSONObject userEntry = new JSONObject();
         try {
-            userEntry.put("id",id);
-            userEntry.put("name",name);
-            userEntry.put("stamp",time);
+            userEntry.put("id",user.id);
+            userEntry.put("name",user.name);
+            userEntry.put("stamp",user.timestamp);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         remote.insertRemote("users",userEntry);
     }
 
+    /**
+     * Checks if a user with the id exists in local database
+     * @param userId The user id which is checked
+     * @param db The database which is checked
+     * @return true if a user with the id exists
+     */
     private boolean isUsedId(String userId,AppDatabase db) {
         if(userId == null || userId == "") return true;
         UserDao userDao = db.UserDao();

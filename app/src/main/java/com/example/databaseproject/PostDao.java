@@ -6,18 +6,9 @@ import androidx.room.*;
 @Dao
 public interface PostDao {
 
-
     // Insert all posts
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     List<Long> insertAll(Post... posts);
-
-    // Insert multiple posts
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    List<Long> insertAll(List<Post> posts);
-
-    // Delete post
-    @Delete
-    void delete(Post posts);
 
     // Update post
     @Update
