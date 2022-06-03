@@ -56,11 +56,14 @@ public class post_comment extends Fragment {
     public void onStart() {
         super.onStart();
         if(getArguments() != null){
+
+            // Get arguments set in constructor
             Bundle args = getArguments();
             String content = args.getString(ARG_CONTENT);
             String user_id = args.getString(ARG_USERID);
             String stamp = args.getString(ARG_STAMP);
 
+            // Update placeholder text into actual content
             ((TextView) getView().findViewById(R.id.commentContent)).setText(content);
             ((TextView) getView().findViewById(R.id.commentCreator)).setText(user_id);
             ((TextView) getView().findViewById(R.id.commentStamp)).setText(stamp);

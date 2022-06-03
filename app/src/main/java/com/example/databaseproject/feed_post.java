@@ -66,8 +66,7 @@ public class feed_post extends Fragment {
         args.putInt(ARG_ID, post.id);
         args.putIntArray(ARG_REACTIONS, reactions); //Count of reactions, index is type of reaction
         args.putBoolean(STATE_COMMENTS, false); //Comment container opening state - true if open, false if closed
-        args.putInt(R_ID_CC, 20557+post.id); //Comment container id
-        //TODO find better method for finding an id for comment part of post
+        args.putInt(R_ID_CC, 20557+post.id); //Comment container id (an arbitrarily chosen number plus the post.id)
 
         fragment.setArguments(args);
 
@@ -134,14 +133,13 @@ public class feed_post extends Fragment {
             }).start();
 
         } else{
-            // To soothe the IDE ( Variable might not have been initialized )
+            // To soothe the IDE and compiler ( Variable might not have been initialized )
             post = new Post();
         }
 
         ((ViewGroup)(getView().findViewById(R.id.commentWrapper))).getChildAt(0).setId(args.getInt(R_ID_CC));
         int commentContainer = args.getInt(R_ID_CC);
         int post_id = args.getInt(ARG_ID);
-        String user_id = args.getString(ARG_USERID);
         // REACT button pressed
         ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
         Button button = viewgroup.findViewById(R.id.postReact);
@@ -160,14 +158,15 @@ public class feed_post extends Fragment {
 
                 CloseUnClosedCommentInput();
 
-                //Add text input for comment
+                // Fragment manager
                 FragmentManager manager = getActivity().getFragmentManager();
                 FragmentTransaction t = manager.beginTransaction();
 
+                // Instantiate textInput fragment
                 android.app.FragmentTransaction transaction = manager.beginTransaction();
                 android.app.Fragment fragment = textInput.newInstance(true, String.valueOf(args.getInt(ARG_ID)));
+                // Add fragment to view
                 transaction.add(commentContainer, fragment, String.valueOf(post_id));
-
                 transaction.addToBackStack(String.valueOf(post_id));
                 transaction.commit();
             }
@@ -176,12 +175,12 @@ public class feed_post extends Fragment {
         // Comments open button listener
         ImageButton b = getView().findViewById(R.id.openComments);
         b.setOnClickListener((View view) -> {
-
-
+                // If comments are visible, hide them
                 if(args.getBoolean(STATE_COMMENTS)){
                     killComments(commentContainer);
                     args.putBoolean(STATE_COMMENTS, false);
                 } else{
+                // Else, show them
                     updateComments(commentContainer,post_id);
                     args.putBoolean(STATE_COMMENTS, true);
                 }
@@ -199,10 +198,15 @@ public class feed_post extends Fragment {
 
             View reactionButton = ((ViewGroup)vg.getChildAt(i)).getChildAt(0);
 
+            // Basically just navigation of the markup
+            /* When this was written, only god and the programmer knew how this code worked
+             Now only god knows */
             ViewGroup reactionCountParent = ((ViewGroup) ((ViewGroup)vg.getChildAt(i)).getChildAt(1));
             TextView reactionCountCounter = (TextView) reactionCountParent.getChildAt(0);
             TextView reactionCountPlural = (TextView) reactionCountParent.getChildAt(1);
 
+            // Decide whether to put " vote" or " votes" after the number of reactions on
+            // the specific type of reaction
             String plural = ( reactions[i+1] > 1 || reactions[i+1] == 0) ? " votes" : " vote";
 
             reactionCountPlural.setText(plural);
@@ -223,6 +227,7 @@ public class feed_post extends Fragment {
         // Delete reaction
         ((ViewGroup) vg.getChildAt(3)).getChildAt(0).setOnClickListener((View view) -> {
 
+            // Modal Dialog for confirmation of deletion of comment
             new AlertDialog.Builder(getContext())
                     .setTitle("Delete")
                     .setMessage("Are you sure you want to delete your reaction?")
@@ -261,7 +266,7 @@ public class feed_post extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void updateComments(int commentContainerId, int postId) {
         //Insert all new comments
-        List<Comment> comments = ((postFeed)getActivity()).getComments(postId);
+        List<Comment> comments = ((feed)getActivity()).getComments(postId);
 
         androidx.fragment.app.FragmentManager manager = getActivity().getSupportFragmentManager();
         androidx.fragment.app.FragmentTransaction t = manager.beginTransaction();
@@ -310,7 +315,7 @@ public class feed_post extends Fragment {
         comment.post_id = post_id;
         comment.stamp = OffsetDateTime.now().toString();
 
-        ((postFeed) getActivity()).makeComment(comment);
+        ((feed) getActivity()).insertCommentIntoDatabase(comment);
 
         ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
         flipViewVisibility(viewgroup, R.id.postReact);
@@ -329,15 +334,18 @@ public class feed_post extends Fragment {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void updateReactionCount(Post post){
-        int[] reactions = ((postFeed) getActivity()).getReactions(post);
+        int[] reactions = ((feed) getActivity()).getReactions(post);
 
         ViewGroup vg = getView().findViewById(R.id.reactionImageContainer);
         for(int i = 1; i <= 3; i++){
-            // TODO : doesnt always syncronize 100% correctly, probably caused by delay in Database insertion
+
+            // Markup navigation
             ViewGroup reactionCountParent = ((ViewGroup) ((ViewGroup)vg.getChildAt(i-1)).getChildAt(1));
             TextView reactionCountCounter = (TextView) reactionCountParent.getChildAt(0);
-            reactionCountCounter.setText(String.valueOf(reactions[i]));
 
+            reactionCountCounter.setText(String.valueOf( reactions[i] ));
+
+            // More markup navigation
             TextView reactionCountPlural = (TextView) reactionCountParent.getChildAt(1);
             String plural = ( reactions[i] > 1 || reactions[i] == 0) ? " votes" : " vote";
 
@@ -348,19 +356,11 @@ public class feed_post extends Fragment {
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public int makeReaction(int type){
+    public void makeReaction(int type){
         Bundle args = getArguments();
         int post_id = args.getInt(ARG_ID);
         SessionHandler sh = new SessionHandler(getContext(), "user");
         String user_id = sh.getString("user_id");
-        CompletableFuture<Integer> result = CompletableFuture.supplyAsync( () -> ((postFeed) getActivity()).makeReaction(post_id, type, user_id));
-        try{
-            return result.get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return -1;
+        new Thread( () -> ((feed) getActivity()).insertReactionIntoDatabases(post_id, type, user_id)).start();
     }
 }

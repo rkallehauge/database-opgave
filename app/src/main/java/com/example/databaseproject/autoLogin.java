@@ -12,7 +12,6 @@ public class autoLogin extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auto_login);
-
     }
 
     @Override
@@ -28,11 +27,11 @@ public class autoLogin extends AppCompatActivity {
         String user_id = sh.getString("user_id");
 
         if(user_id != null){
-            Log.d("Session","Logged in as: " + user_id);
-            Intent intent = new Intent(this, postFeed.class);
+            Log.d("Auto-login", "Session gotten successfully");
+            Intent intent = new Intent(this, feed.class);
             startActivity(intent);
         } else{
-            // No session found, send user to user creation
+            Log.d("Auto-login", "Session not found");
             Intent intent = new Intent(this, createUser.class);
             startActivity(intent);
         }

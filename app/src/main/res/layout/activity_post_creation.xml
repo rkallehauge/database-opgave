@@ -19,7 +19,7 @@
                 android:text="@string/createPost"
                 android:textColor="#ffffff"
                 android:id="@+id/postButton"
-                android:onClick="createPost"
+                android:onClick="showPostCreationForm"
                 />
             <LinearLayout
                 android:layout_width="match_parent"

@@ -11,6 +11,6 @@ public interface CommentDao {
     List<Comment> getAllFromPostId(int post_id);
 
     @Insert
-    void insertAll(Comment... comments);
+    void insert(Comment comment);
 
 }

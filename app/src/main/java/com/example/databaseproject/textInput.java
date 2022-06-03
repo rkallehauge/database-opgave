@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,17 +18,11 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -47,7 +40,7 @@ public class textInput extends Fragment {
     // TODO: Rename and change types of parameters
     private boolean startedFromFragment;
     // If parent is fragment, this is the ID of that parent
-    private String fragmentId;
+
     private FragmentActivity listener;
 
     // One Preview Image
@@ -122,7 +115,7 @@ public class textInput extends Fragment {
         // Post button handler
         View postButton = getView().findViewById(R.id.inputPost);
         postButton.setOnClickListener((View view) -> {
-            Log.d("Post creation", "Postbutton pushed");
+            Log.d("Post creation", "Post-button pressed");
 
             String input = ((EditText) getView().findViewById(R.id.userTextInput)).getText().toString();
             //If imagePath is not null it is a post and not comment
@@ -131,7 +124,7 @@ public class textInput extends Fragment {
                     InputStream inputStream = getActivity().getContentResolver().openInputStream(imagePath);
                     byte[] imageBytes = readAllBytes(inputStream);
                     CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> remote.uploadImage(imageBytes));
-                    ((postFeed) getActivity()).post(input, future.get());
+                    ((feed) getActivity()).insertPostintoDatabases(input, future.get());
                 } catch (IOException | ExecutionException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -143,7 +136,7 @@ public class textInput extends Fragment {
                     ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).post(input);
                     getFragmentManager().popBackStack();
                 }
-                else ((postFeed) getActivity()).post(input, null);
+                else ((feed) getActivity()).insertPostintoDatabases(input, null);
             }
         });
 
@@ -153,7 +146,7 @@ public class textInput extends Fragment {
                 if(startedFromFragment)
                     ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).close();
                 else
-                    ((postFeed) getActivity()).close(parentId);
+                    ((feed) getActivity()).close();
             }
         );
 
@@ -192,17 +185,13 @@ public class textInput extends Fragment {
         return out.toByteArray();
     }
 
-    public static int copyAllBytes(InputStream in, OutputStream out) throws IOException {
-        int byteCount = 0;
+    public static void copyAllBytes(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[4096];
         while (true) {
             int read = in.read(buffer);
             if (read == -1) break;
-
             out.write(buffer, 0, read);
-            byteCount += read;
         }
-        return byteCount;
     }
 
 

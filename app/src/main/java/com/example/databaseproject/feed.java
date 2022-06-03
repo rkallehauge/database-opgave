@@ -6,11 +6,9 @@ import android.app.FragmentTransaction;
 
 import java.time.OffsetDateTime;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import android.os.Build;
 import android.util.Log;
@@ -28,7 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class postFeed extends AppCompatActivity {
+public class feed extends AppCompatActivity {
 
     // For interacting with fragment types, literal fragments
     FragmentManager manager;
@@ -41,20 +39,22 @@ public class postFeed extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Fragment fragment
+        // Fragment fragment // only supports fragment type Fragment
         manager = getFragmentManager();
 
-        // feed_post
-        // post_reaction
+        // (post_reaction) fragment // supports all fragments that are extended from Fragment
         sManager = getSupportFragmentManager();
 
         setContentView(R.layout.activity_post_creation);
         clearFeed();
-        new Thread(() -> createPostFromRemote()).start();
+        new Thread(() -> createPostsFromRemote()).start();
     }
 
+    /**
+     * Gather users, post and reaction from remote and inserts into local database, then calls method for creating post in local database
+     */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void createPostFromRemote() {
+    public void createPostsFromRemote() {
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         JSONArray remoteUsers = remote.getEverythingFromRemote("users");
          for(int i = 0; i < remoteUsers.length(); i++) {
@@ -77,7 +77,6 @@ public class postFeed extends AppCompatActivity {
         }
 
         JSONArray remoteReactions = remote.getEverythingFromRemote("reactions");
-
         ReactionDao reactdao = db.ReactionDao();
         for(int i = 0; i < remoteReactions.length(); i++) {
             try {
@@ -88,33 +87,42 @@ public class postFeed extends AppCompatActivity {
             }
         }
 
-        List<Post> l  = getPosts(db);
-        for(Post post:l)
-            makePost(post);
-
-
+        new Thread(() -> {
+            List<Post> localPosts = postdao.getAll();
+            for (Post post : localPosts)
+                makePostInFeed(post);
+        });
     }
 
-    //Main feed post button
-    public void createPost(View view){
-
+    /**
+     * Action for button on feed for initiating creating a post
+     * @param view a reference to the current view
+     */
+    public void showPostCreationForm(View view){
         // Hide button and feed for now
-        hideFeed();
+        findViewById(R.id.postButton).setVisibility(View.GONE);
+        findViewById(R.id.postFeed).setVisibility(View.GONE);
 
+        // Instantiates textInput fragment
         FragmentTransaction transaction = manager.beginTransaction();
         Fragment fragment = textInput.newInstance(false, null);
 
+        // Add fragment to view
         transaction.add(R.id.postCreation, fragment, "textInput");
         transaction.addToBackStack("back");
         transaction.commit();
     }
 
-    // TODO : Find less scuffed way to handle text, possibly (hopefully ) through textInput
+    /**
+     * Inserts a post into local and remote database, with the user from the session, content and image if given
+     * @param content The text content of the post
+     * @param image Image name on remote server
+     */
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void post(String content, String image){
+    public void insertPostintoDatabases(String content, String image){
         Log.d("Post creation", "Post is being made!");
 
-        // Show button again
+        // Show button and feed once comment has been made
         showFeed();
 
         SessionHandler sh = new SessionHandler(this,"user");
@@ -126,7 +134,6 @@ public class postFeed extends AppCompatActivity {
         clearFeed();
         Log.d("Post creation", "Feed has been cleared");
         new Thread(()->{
-
             AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                     AppDatabase.class, "User").fallbackToDestructiveMigration().build();
             PostDao postdao = db.PostDao();
@@ -136,6 +143,7 @@ public class postFeed extends AppCompatActivity {
 
             if(image != null)
                 db.ImageAttachmentDao().insert(post.id,image);
+
             JSONObject jsonPost = new JSONObject();
                 try {
                     jsonPost.put("id",result.get(0));
@@ -150,77 +158,67 @@ public class postFeed extends AppCompatActivity {
             // Remove fragment again
             manager.popBackStack();
 
-            createPostFromRemote();
+            createPostsFromRemote();
 
         }).start();
 
     }
 
-    // called from fragment
-    public void close(String id){
+    /**
+     * Close method called by cancel button which removes the post creation and shows the feed
+     */
+    public void close(){
         manager.popBackStack();
-        // Show reactionContainer again
-
         showFeed();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public List<Post> getPosts(AppDatabase db){
-        PostDao postdao = db.PostDao();
-        CompletableFuture<List<Post>> posts = CompletableFuture.supplyAsync(postdao::getAll);
-        try {
-            return posts.get();
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    // Only inserts comment into db, doesn't create display
-    public void makeComment(Comment comment){
+    /**
+     * Inserts comment into local database
+     * @param comment comment which are inserted
+     */
+    public void insertCommentIntoDatabase(Comment comment){
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         CommentDao commentdao = db.CommentDao();
-        new Thread(() -> {
-        commentdao.insertAll(comment);
-        }).start();
+        new Thread(() -> commentdao.insert(comment)).start();
     }
 
+    /**
+     * Makes the given post in the feed
+     * @param post Post which are created in feed
+     */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void makePost(Post post){
+    public void makePostInFeed(Post post){
         int[] reactions = getReactions(post);
-
         feed_post fragment = feed_post.newInstance(post, reactions);
-
         sManager.beginTransaction().add(R.id.postFeed, fragment, String.valueOf(post.id)).commit();
     }
 
-    public void hideFeed(){
-        // Show button again
-        findViewById(R.id.postButton).setVisibility(View.GONE);
-        findViewById(R.id.postFeed).setVisibility(View.GONE);
-    }
-
+    /**
+     * Makes post button and feed with post visible
+     */
     public void showFeed(){
-        // Show button again
         findViewById(R.id.postButton).setVisibility(View.VISIBLE);
         findViewById(R.id.postFeed).setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Inserts a reaction with the given parameters into local and remote or update if it already exists
+     * @param post_id The id of the post of which the reaction is made
+     * @param type The type of reaction made on the post
+     * @param user_id The id of the user which made the reaction
+     */
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public int makeReaction(int post_id, int type, String user_id){
-
-
-        System.out.println("Reaction attempt");
+    public void insertReactionIntoDatabases(int post_id, int type, String user_id){
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         ReactionDao reactiondao = db.ReactionDao();
         String stamp = OffsetDateTime.now().toString();
 
+        Reaction reaction = new Reaction(post_id, user_id, type, stamp);
 
-            Reaction reaction = new Reaction(post_id, user_id, type, stamp);
-
-            JSONObject JSONReaction = new JSONObject();
+        //JSON version of reaction for remote database
+        JSONObject JSONReaction = new JSONObject();
         try {
             JSONReaction.put("user_id",user_id);
             JSONReaction.put("post_id",post_id);
@@ -230,33 +228,27 @@ public class postFeed extends AppCompatActivity {
             e.printStackTrace();
         }
 
-            /*
-                TODO : This works, but can sometimes crash the app after a clean wipe of DB,
-                 it can possibly not actually be a crash, but the Layout reloads as if it were a crash
-             */
-            int dbReturn = reactiondao.getReactionIdById(post_id,user_id);
-            System.out.println(dbReturn);
-                // No current reaction exists on this post by this user
-            System.out.println("post_id : " + post_id + " user_id: "+ user_id);
-            if(dbReturn != 0){
-                System.out.println("Existing reaction updated");
-                reactiondao.updateReaction(post_id,user_id,type);
-                //Update remote
-                try {
-                    JSONReaction.remove("type");
-                    JSONReaction.remove("stamp");
-                    remote.updateRemote("reactions",JSONReaction,new JSONObject().put("type",type).put("stamp",stamp));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                // Update reac
-            } else{
-                System.out.println("New reaction posted");
-                reactiondao.insertReactions(reaction);
-                remote.insertRemote("reactions",JSONReaction);
+        int dbReturn = reactiondao.getReactionIdById(post_id,user_id);
+
+        if(dbReturn != 0){
+            Log.d("Comment", "Updated existing reaction");
+            reactiondao.updateReaction(post_id,user_id,type);
+
+            //Update remote
+            try {
+                JSONReaction.remove("type");
+                JSONReaction.remove("stamp");
+                remote.updateRemote("reactions",JSONReaction,new JSONObject().put("type",type).put("stamp",stamp));
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            db.close();
-            return 1;
+
+        } else{
+            reactiondao.insertReactions(reaction);
+            remote.insertRemote("reactions",JSONReaction);
+            Log.d("Comment", "New reaction posted");
+        }
+        db.close();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -264,18 +256,17 @@ public class postFeed extends AppCompatActivity {
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         ReactionDao reactiondao = db.ReactionDao();
-        // hopefully this shitcode works
+
         CompletableFuture<List<Reaction>> reactions = CompletableFuture.supplyAsync(() -> reactiondao.getReactions(post.id));
         try{
             List<Reaction> list = reactions.get();
+            // 4 types of reactions, same type as index, deleted are on index 0, type 1 is index 1 and so forth
             int[] reactionsList = {0,0,0,0};
             for(Reaction r:list){
                 reactionsList[r.type]++;
             }
             return reactionsList;
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
         return null;
@@ -290,9 +281,7 @@ public class postFeed extends AppCompatActivity {
         CompletableFuture<List<Comment>> result = CompletableFuture.supplyAsync(() -> commentdao.getAllFromPostId(post_id));
         try{
             return result.get();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
         return null;
