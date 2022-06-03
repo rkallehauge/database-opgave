@@ -91,7 +91,7 @@ public class feed extends AppCompatActivity {
             List<Post> localPosts = postdao.getAll();
             for (Post post : localPosts)
                 makePostInFeed(post);
-        });
+        }).start();
     }
 
     /**
