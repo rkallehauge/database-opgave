@@ -68,10 +68,9 @@ public class remote {
      * @param criteria The criteria which the select constraints
      * @return A JSON array which contains returned rows
      */
-    private static JSONArray selectRemote(String table, JSONObject criteria) {
+    public static JSONArray selectRemote(String table, JSONObject criteria) {
         try {
             URL url = criteriaURL(criteria,table);
-
             Scanner scanner = new Scanner(url.openStream());
             String response = scanner.useDelimiter("\\Z").next();
             JSONArray json = new JSONArray(response);

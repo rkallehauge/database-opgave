@@ -6,6 +6,7 @@ import android.app.FragmentTransaction;
 
 import java.time.OffsetDateTime;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -55,26 +56,36 @@ public class feed extends AppCompatActivity {
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void createPostsFromRemote() {
+
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         JSONArray remoteUsers = remote.getEverythingFromRemote("users");
-         for(int i = 0; i < remoteUsers.length(); i++) {
+        List<String> userIdsInRemote = new ArrayList<>();
+        for(int i = 0; i < remoteUsers.length(); i++) {
             try {
                 JSONObject entry = remoteUsers.getJSONObject(i);
-                db.UserDao().insert(new User(entry.getString("id"), entry.getString("name"),entry.getString("stamp")));
+                db.userDao().insert(new User(entry.getString("id"), entry.getString("name"),entry.getString("stamp")));
+                userIdsInRemote.add(entry.getString("id"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+
+        db.userDao().removeAllNotInRemote(userIdsInRemote);
+
         JSONArray remotePosts = remote.getEverythingFromRemote("posts");
         PostDao postdao = db.PostDao();
+        List<Integer> postIdsInRemote = new ArrayList<>();
         for(int i = 0; i < remotePosts.length(); i++) {
             try {
                 JSONObject entry = remotePosts.getJSONObject(i);
                 postdao.insertAll(new Post(entry.getInt("id"),entry.getString("user_id"),entry.getString("content"),entry.getString("stamp")));
+                postIdsInRemote.add(entry.getInt("id"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+        //Remove post in local DB which have been removed in remote
+        postdao.removeAllNotInRemote(postIdsInRemote);
 
         JSONArray remoteReactions = remote.getEverythingFromRemote("reactions");
         ReactionDao reactdao = db.ReactionDao();
@@ -92,6 +103,17 @@ public class feed extends AppCompatActivity {
             for (Post post : localPosts)
                 makePostInFeed(post);
         }).start();
+    }
+
+    /**
+     * Makes the given post in the feed
+     * @param post Post which are created in feed
+     */
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void makePostInFeed(Post post){
+        int[] reactions = getReactions(post);
+        feed_post fragment = feed_post.newInstance(post, reactions);
+        sManager.beginTransaction().add(R.id.postFeed, fragment, String.valueOf(post.id)).commit();
     }
 
     /**
@@ -184,17 +206,6 @@ public class feed extends AppCompatActivity {
     }
 
     /**
-     * Makes the given post in the feed
-     * @param post Post which are created in feed
-     */
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void makePostInFeed(Post post){
-        int[] reactions = getReactions(post);
-        feed_post fragment = feed_post.newInstance(post, reactions);
-        sManager.beginTransaction().add(R.id.postFeed, fragment, String.valueOf(post.id)).commit();
-    }
-
-    /**
      * Makes post button and feed with post visible
      */
     public void showFeed(){
@@ -228,6 +239,7 @@ public class feed extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        //Count reactions from user on the post
         int dbReturn = reactiondao.getReactionIdById(post_id,user_id);
 
         if(dbReturn != 0){
@@ -262,9 +274,9 @@ public class feed extends AppCompatActivity {
             List<Reaction> list = reactions.get();
             // 4 types of reactions, same type as index, deleted are on index 0, type 1 is index 1 and so forth
             int[] reactionsList = {0,0,0,0};
-            for(Reaction r:list){
+            for(Reaction r:list)
                 reactionsList[r.type]++;
-            }
+
             return reactionsList;
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
@@ -272,12 +284,17 @@ public class feed extends AppCompatActivity {
         return null;
     }
 
-
+    /**
+     * Get all comments to a post
+     * @param post_id Post id which the comments are made on
+     * @return A list of comments to the post
+     */
     @RequiresApi(api = Build.VERSION_CODES.N)
     public List<Comment> getComments(int post_id){
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
         AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         CommentDao commentdao = db.CommentDao();
+        //This is used such main thread does not wait on result
         CompletableFuture<List<Comment>> result = CompletableFuture.supplyAsync(() -> commentdao.getAllFromPostId(post_id));
         try{
             return result.get();
@@ -287,6 +304,9 @@ public class feed extends AppCompatActivity {
         return null;
     }
 
+    /**
+     * removes all post on the feed
+     */
     public void clearFeed(){
         ((ViewGroup)findViewById(R.id.postFeed)).removeAllViews();
     }

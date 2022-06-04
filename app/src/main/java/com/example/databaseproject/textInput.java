@@ -133,7 +133,7 @@ public class textInput extends Fragment {
                 //Fragment is parent when a comment is posted
                 if (getArguments().getBoolean(PARENT_IS_FRAGMENT)) {
                     // Find parent fragment
-                    ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).post(input);
+                    ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).makeComment(input);
                     getFragmentManager().popBackStack();
                 }
                 else ((feed) getActivity()).insertPostintoDatabases(input, null);
@@ -144,7 +144,7 @@ public class textInput extends Fragment {
         View cancelButton = getView().findViewById(R.id.inputCancel);
         cancelButton.setOnClickListener((View view) -> {
                 if(startedFromFragment)
-                    ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).close();
+                    ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).closeCommentAndShowReaction();
                 else
                     ((feed) getActivity()).close();
             }

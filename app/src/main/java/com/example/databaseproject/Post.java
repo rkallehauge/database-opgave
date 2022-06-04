@@ -1,8 +1,11 @@
 package com.example.databaseproject;
+import static androidx.room.ForeignKey.CASCADE;
+
 import androidx.room.*;
 
 
-@Entity(foreignKeys = @ForeignKey(entity = User.class, parentColumns = "id", childColumns = "user_id"))
+
+@Entity(foreignKeys = @ForeignKey(onDelete = CASCADE, entity = User.class, parentColumns = "id", childColumns = "user_id"))
 
 public class Post {
 

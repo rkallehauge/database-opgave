@@ -1,12 +1,14 @@
 package com.example.databaseproject;
+import static androidx.room.ForeignKey.CASCADE;
+
 import java.sql.Timestamp;
 
 import androidx.annotation.NonNull;
 import androidx.room.*;
 
 @Entity(foreignKeys = {
-        @ForeignKey(entity = User.class, parentColumns = "id", childColumns = "user_id"),
-        @ForeignKey(entity = Post.class, parentColumns = "id", childColumns = "post_id")
+        @ForeignKey(onDelete = CASCADE, entity = User.class, parentColumns = "id", childColumns = "user_id"),
+        @ForeignKey(onDelete = CASCADE, entity = Post.class, parentColumns = "id", childColumns = "post_id")
 },
     primaryKeys = {
         "post_id",

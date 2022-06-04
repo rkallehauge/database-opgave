@@ -21,6 +21,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class createUser extends AppCompatActivity {
 
@@ -36,22 +38,26 @@ public class createUser extends AppCompatActivity {
      * @param view The current view with the input fields
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void tryInsert(View view) {
+    public void tryInsertUser(View view) {
         SessionHandler sh = new SessionHandler(this,"user");
-
+        Log.d("User creation", "Trying to create user");
         new Thread (() -> {
             AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
 
             //Find users from remote and insert
             JSONArray remoteUsers = remote.getEverythingFromRemote("users");
+            List<String> ids = new ArrayList<>();
             for(int i = 0; i < remoteUsers.length(); i++) {
                 try {
                     JSONObject entry = remoteUsers.getJSONObject(i);
-                    insertUser(new User(entry.getString("id"), entry.getString("name"),entry.getString("stamp")),db);
+                    db.userDao().insert(new User(entry.getString("id"), entry.getString("name"),entry.getString("stamp")));
+                    ids.add(entry.getString("id"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
+            //Delete removed users such a removed user can be created again
+            db.userDao().removeAllNotInRemote(ids);
 
             String id = ((EditText) findViewById(R.id.userIdInput)).getText().toString();
             //Insert user if not used
@@ -59,15 +65,15 @@ public class createUser extends AppCompatActivity {
                 String name = ((EditText) findViewById(R.id.userNameInput)).getText().toString();
                 Log.d("User creation", "A user was created with id: " + id + " and name: " + name);
                 insertUser(new User(id,name, OffsetDateTime.now().toString()),db);
+                //Insert userId to sessionHandler
+                sh.putString("user_id", id);
+                finish();
             }
             //Show error message if already used
             else{
                 ((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
             }
 
-            //Insert userId to sessionHandler
-            sh.putString("user_id", id);
-            finish();
 
         }).start();
     }
@@ -78,7 +84,7 @@ public class createUser extends AppCompatActivity {
      * @param db Reference to the local database
      */
     public void insertUser(User user, AppDatabase db) {
-        db.UserDao().insert(user);
+        db.userDao().insert(user);
         JSONObject userEntry = new JSONObject();
         try {
             userEntry.put("id",user.id);
@@ -98,7 +104,8 @@ public class createUser extends AppCompatActivity {
      */
     private boolean isUsedId(String userId,AppDatabase db) {
         if(userId == null || userId == "") return true;
-        UserDao userDao = db.UserDao();
-        return (userDao.findUserById(userId) != null);
+        String id = db.userDao().findUserById(userId);
+        System.out.println("found: " + id);
+        return (id != null);
     }
 }
