@@ -28,13 +28,7 @@
                 android:orientation="vertical"
                 tools:context=".feed_post"
                 >
-
             </LinearLayout>
-
-
-
-
         </LinearLayout>
-
 
 </androidx.core.widget.NestedScrollView>

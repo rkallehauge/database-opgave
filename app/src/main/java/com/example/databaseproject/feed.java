@@ -127,7 +127,7 @@ public class feed extends AppCompatActivity {
 
         // Instantiates textInput fragment
         FragmentTransaction transaction = manager.beginTransaction();
-        Fragment fragment = textInput.newInstance(false, null);
+        Fragment fragment = textForm.newInstance(false, null);
 
         // Add fragment to view
         transaction.add(R.id.postCreation, fragment, "textInput");

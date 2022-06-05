@@ -27,32 +27,28 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link textInput#newInstance} factory method to
+ * Use the {@link textForm#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class textInput extends Fragment {
+public class textForm extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String PARENT_IS_FRAGMENT = "parentType";
     private static final String PARENT_ID = "parentId";
 
-    // TODO: Rename and change types of parameters
     private boolean startedFromFragment;
-    // If parent is fragment, this is the ID of that parent
-
     private FragmentActivity listener;
 
-    // One Preview Image
+    //Preview viewer for image
     private ImageView IVPreviewImage;
 
-    // constant to compare
-    // the activity result code
+    // Successful response code for selecting image
     private final int SELECT_PICTURE = 200;
 
     private Uri imagePath;
 
-    public textInput() {
+
+    public textForm() {
         // Required empty public constructor
     }
 
@@ -62,9 +58,8 @@ public class textInput extends Fragment {
      *
      * @return A new instance of fragment textInput.
      */
-    // TODO: Rename and change types and number of parameters
-    public static textInput newInstance(boolean startedFromFragment, String fragmentId) {
-        textInput fragment = new textInput();
+    public static textForm newInstance(boolean startedFromFragment, String fragmentId) {
+        textForm fragment = new textForm();
         Bundle args = new Bundle();
         args.putBoolean(PARENT_IS_FRAGMENT, startedFromFragment);
         args.putString(PARENT_ID, fragmentId);
@@ -82,7 +77,7 @@ public class textInput extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_text_input, container, false);
+        return inflater.inflate(R.layout.fragment_textform, container, false);
     }
     // closes modal
 
@@ -104,8 +99,10 @@ public class textInput extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
     }
-    // TODO : handle text shit in here
 
+    /**
+     * Initialize the textForm with handlers
+     */
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onStart(){
@@ -114,41 +111,16 @@ public class textInput extends Fragment {
 
         // Post button handler
         View postButton = getView().findViewById(R.id.inputPost);
-        postButton.setOnClickListener((View view) -> {
-            Log.d("Post creation", "Post-button pressed");
-
-            String input = ((EditText) getView().findViewById(R.id.userTextInput)).getText().toString();
-            //If imagePath is not null it is a post and not comment
-            if(imagePath != null)
-                try {
-                    InputStream inputStream = getActivity().getContentResolver().openInputStream(imagePath);
-                    byte[] imageBytes = readAllBytes(inputStream);
-                    CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> remote.uploadImage(imageBytes));
-                    ((feed) getActivity()).insertPostintoDatabases(input, future.get());
-                } catch (IOException | ExecutionException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-            //No image is given therefore information if needs to be found if the post is comment or a post with only text
-            else {
-                //Fragment is parent when a comment is posted
-                if (getArguments().getBoolean(PARENT_IS_FRAGMENT)) {
-                    // Find parent fragment
-                    ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).makeComment(input);
-                    getFragmentManager().popBackStack();
-                }
-                else ((feed) getActivity()).insertPostintoDatabases(input, null);
-            }
-        });
+        postButton.setOnClickListener((View view) -> textFormSubmit(parentId));
 
         //Cancel button handler
         View cancelButton = getView().findViewById(R.id.inputCancel);
         cancelButton.setOnClickListener((View view) -> {
-                if(startedFromFragment)
-                    ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).closeCommentAndShowReaction();
-                else
-                    ((feed) getActivity()).close();
-            }
-        );
+            if(startedFromFragment)
+                ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).closeCommentAndShowReaction();
+            else
+                ((feed) getActivity()).close();
+        });
 
         IVPreviewImage = getView().findViewById(R.id.IVPreviewImage);
 
@@ -168,30 +140,69 @@ public class textInput extends Fragment {
         }
     }
 
-    //Called method once user is returned from gallery
+    /**
+     * textForm submit handler method
+     * @param parentId The id of parent of the textForm
+     */
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void textFormSubmit(String parentId) {
+        Log.d("Post creation", "Post-button pressed");
+
+        String input = ((EditText) getView().findViewById(R.id.userTextInput)).getText().toString();
+        //If imagePath is not null it is a post and not comment
+        if(imagePath != null)
+            try {
+                InputStream inputStream = getActivity().getContentResolver().openInputStream(imagePath);
+                byte[] imageBytes = readAllBytes(inputStream);
+                CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> remote.uploadImage(imageBytes));
+                ((feed) getActivity()).insertPostintoDatabases(input, future.get());
+            } catch (IOException | ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+            //No image is given therefore information if needs to be found if the post is comment or a post with only text
+        else {
+            //Fragment is parent when a comment is posted
+            if (getArguments().getBoolean(PARENT_IS_FRAGMENT)) {
+                // Find parent fragment
+                ((feed_post) listener.getSupportFragmentManager().findFragmentByTag(parentId)).makeComment(input);
+                getFragmentManager().popBackStack();
+            }
+            else ((feed) getActivity()).insertPostintoDatabases(input, null);
+        }
+    }
+
+    /**
+     * Method called when a image is selected from gallery
+     * @param requestCode The code which tells if an image is selected
+     * @param resultCode The code which tells if the activity was done successfully
+     * @param data The data of the selected image
+     */
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK)
             if (requestCode == 200) if (data != null) {
-                    IVPreviewImage.setImageURI(data.getData());
-                    imagePath = data.getData();
+                IVPreviewImage.setImageURI(data.getData());
+                imagePath = data.getData();
             }
     }
+
+    /**
+     * Reads an image from input stream and converts it into a byte array
+     * @param in Inputstream with image data
+     * @return byte array with image information
+     * @throws IOException
+     */
     public static byte[] readAllBytes(InputStream in) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        copyAllBytes(in, out);
-        return out.toByteArray();
-    }
-
-    public static void copyAllBytes(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[4096];
         while (true) {
             int read = in.read(buffer);
             if (read == -1) break;
             out.write(buffer, 0, read);
         }
+        return out.toByteArray();
     }
 
 

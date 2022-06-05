@@ -223,7 +223,7 @@ public class feed_post extends Fragment {
 
         // Instantiate textInput fragment
         android.app.FragmentTransaction transaction = manager.beginTransaction();
-        android.app.Fragment fragment = textInput.newInstance(true, String.valueOf(post_id));
+        android.app.Fragment fragment = textForm.newInstance(true, String.valueOf(post_id));
 
         // Add fragment to view
         transaction.add(commentContainer, fragment, String.valueOf(post_id));
