@@ -161,6 +161,7 @@ public class feed_post extends Fragment {
      * @param args Arguments which the post is made of
      * @return Post made using the given arguments
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private Post initPost(Bundle args) {
         if (getArguments() != null) {
             Log.d("Post creation", "Post " + args.getString(ARG_USERID) + "getting initialized");
@@ -183,22 +184,30 @@ public class feed_post extends Fragment {
             stampText.setText(stamp);
 
             //Start thread for loading image
-            new Thread(() -> {
+            CompletableFuture<Bitmap> bitmap = new CompletableFuture<Bitmap>().supplyAsync(() -> {
                 AppDatabase db = Room.databaseBuilder(getContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
                 String image = db.ImageAttachmentDao().path(id);
                 if(image != null) {
-                    ImageView imageView = getView().findViewById(R.id.postImage);
                     InputStream imageInput = null;
                     try {
                         imageInput = new URL(IMAGE_URL + image).openStream();
-                        Bitmap bitmap = BitmapFactory.decodeStream(imageInput);
-                        imageView.setImageBitmap(bitmap);
+                        return BitmapFactory.decodeStream(imageInput);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-            }).start();
-
+                return null;
+            });
+            Bitmap image = null;
+            try {
+                image = bitmap.get();
+                if(image != null) {
+                    ImageView imageView = getView().findViewById(R.id.postImage);
+                    imageView.setImageBitmap(image);
+                }
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
             return new Post(id,uid,content,stamp);
         } else{
             // To soothe the IDE and compiler ( Variable might not have been initialized )
