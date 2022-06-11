@@ -8,7 +8,7 @@ public interface UserDao {
 
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    void insert(User user);
+    long insert(User user);
 
     @Query("SELECT id FROM User WHERE id = :userId")
     String findUserById(String userId);

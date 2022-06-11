@@ -78,14 +78,15 @@ public class feed extends AppCompatActivity {
         for(int i = 0; i < remotePosts.length(); i++) {
             try {
                 JSONObject entry = remotePosts.getJSONObject(i);
-                postdao.insertAll(new Post(entry.getInt("id"),entry.getString("user_id"),entry.getString("content"),entry.getString("stamp")));
+                postdao.insert(new Post(entry.getInt("id"),entry.getString("user_id"),entry.getString("content"),entry.getString("stamp")));
+                System.out.println(entry.getInt("id"));
                 postIdsInRemote.add(entry.getInt("id"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         //Remove post in local DB which have been removed in remote
-        postdao.removeAllNotInRemote(postIdsInRemote);
+        //postdao.removeAllNotInRemote(postIdsInRemote);
 
         JSONArray remoteReactions = remote.getEverythingFromRemote("reactions");
         ReactionDao reactdao = db.ReactionDao();
@@ -149,9 +150,6 @@ public class feed extends AppCompatActivity {
 
         SessionHandler sh = new SessionHandler(this,"user");
         String user_id = sh.getString("user_id");
-        String epoch = OffsetDateTime.now().toString();
-
-        Post post = new Post(user_id,content,epoch);
 
         clearFeed();
         Log.d("Post creation", "Feed has been cleared");
@@ -160,15 +158,19 @@ public class feed extends AppCompatActivity {
                     AppDatabase.class, "User").fallbackToDestructiveMigration().build();
             PostDao postdao = db.PostDao();
 
-            List<Long> result = postdao.insertAll(post);
-            post.id = result.get(0).intValue();
+            String epoch = OffsetDateTime.now().toString();
+            int id = postdao.largestId()+1;
+            Post post = new Post(id,user_id,content,epoch);
+
+            long result = postdao.insert(post);
+            post.id = (int) result;
 
             if(image != null)
                 db.ImageAttachmentDao().insert(post.id,image);
 
             JSONObject jsonPost = new JSONObject();
                 try {
-                    jsonPost.put("id",result.get(0));
+                    jsonPost.put("id",result);
                     jsonPost.put("user_id", user_id);
                     jsonPost.put("content",content);
                     jsonPost.put("stamp",epoch);

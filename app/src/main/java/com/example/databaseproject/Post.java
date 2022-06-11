@@ -9,7 +9,7 @@ import androidx.room.*;
 
 public class Post {
 
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     public int id;
 
     public String user_id;

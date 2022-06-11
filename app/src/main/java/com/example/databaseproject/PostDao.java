@@ -8,7 +8,7 @@ public interface PostDao {
 
     // Insert all posts
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    List<Long> insertAll(Post... posts);
+    long insert(Post post);
 
     // Update post
     @Update
@@ -21,4 +21,8 @@ public interface PostDao {
     //Remove all post not in remote IE they have been deleted from another app
     @Query("DELETE FROM Post WHERE id NOT IN (:postIdsInRemote)")
     void removeAllNotInRemote(List<Integer> postIdsInRemote);
+
+    //Find new id
+    @Query("SELECT MAX(id) FROM Post")
+    int largestId();
 }
