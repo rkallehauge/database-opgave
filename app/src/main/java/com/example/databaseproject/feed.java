@@ -32,6 +32,8 @@ public class feed extends AppCompatActivity {
     // For interacting with fragment types, literal fragments
     FragmentManager manager;
 
+    Integer textFormId = null;
+
     // for interacting with descendants of fragment, e.g feed_post
     androidx.fragment.app.FragmentManager sManager;
 
@@ -54,6 +56,10 @@ public class feed extends AppCompatActivity {
     public void onBackPressed(){
         super.onBackPressed();
         showFeed();
+        if(textFormId!=null){
+            feed_post fragment = (feed_post) sManager.findFragmentByTag(String.valueOf(textFormId));
+            fragment.flipButtons();
+        }
     }
 
     /**
@@ -319,5 +325,9 @@ public class feed extends AppCompatActivity {
      */
     public void clearFeed(){
         ((ViewGroup)findViewById(R.id.postFeed)).removeAllViews();
+    }
+
+    public void setTextFormId(int id){
+        textFormId = id;
     }
 }

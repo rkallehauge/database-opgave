@@ -222,6 +222,9 @@ public class feed_post extends Fragment {
      * @param commentContainer The container which the comment exist in
      */
     private void openCommentForm(ViewGroup viewgroup, int post_id, int commentContainer) {
+
+        ((feed) getActivity()).setTextFormId(post_id);
+
         flipViewVisibility(viewgroup, R.id.postReact);
         flipViewVisibility(viewgroup, R.id.postComment);
 
@@ -429,5 +432,11 @@ public class feed_post extends Fragment {
             e.printStackTrace();
         }
 
+    }
+
+    public void flipButtons(){
+        ViewGroup viewgroup = getView().findViewById(R.id.reactionContainer);
+        flipViewVisibility(viewgroup, R.id.postReact);
+        flipViewVisibility(viewgroup, R.id.postComment);
     }
 }

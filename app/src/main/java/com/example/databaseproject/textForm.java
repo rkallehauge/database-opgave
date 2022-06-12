@@ -205,5 +205,4 @@ public class textForm extends Fragment {
         return out.toByteArray();
     }
 
-
 }
