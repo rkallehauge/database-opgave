@@ -51,6 +51,11 @@ public class feed extends AppCompatActivity {
         new Thread(() -> createPostsFromRemote()).start();
     }
 
+    public void onBackPressed(){
+        super.onBackPressed();
+        showFeed();
+    }
+
     /**
      * Gather users, post and reaction from remote and inserts into local database, then calls method for creating post in local database
      */
@@ -276,8 +281,11 @@ public class feed extends AppCompatActivity {
             List<Reaction> list = reactions.get();
             // 4 types of reactions, same type as index, deleted are on index 0, type 1 is index 1 and so forth
             int[] reactionsList = {0,0,0,0};
-            for(Reaction r:list)
+            for(Reaction r:list){
+                if(r.type >= 0 && r.type <= 4){
                 reactionsList[r.type]++;
+                }
+            }
 
             return reactionsList;
         } catch (ExecutionException | InterruptedException e) {
