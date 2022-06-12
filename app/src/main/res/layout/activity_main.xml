@@ -47,8 +47,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/createTakenId"
-            android:textColor="#FFFFFF"
-            android:visibility="visible" />
+            android:visibility="invisible"
+        />
 
         <Button
             android:layout_width="wrap_content"

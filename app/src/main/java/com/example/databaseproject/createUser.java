@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
 
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,6 +42,9 @@ public class createUser extends AppCompatActivity {
     public void tryInsertUser(View view) {
         SessionHandler sh = new SessionHandler(this,"user");
         Log.d("User creation", "Trying to create user");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("User already exists")
+                .setMessage("Users with this ID already exists, please choose another username");
         new Thread (() -> {
             AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
 
@@ -71,7 +75,8 @@ public class createUser extends AppCompatActivity {
             }
             //Show error message if already used
             else{
-                ((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
+                //((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
+                    builder.show();
             }
 
 
@@ -103,7 +108,9 @@ public class createUser extends AppCompatActivity {
      * @return true if a user with the id exists
      */
     private boolean isUsedId(String userId,AppDatabase db) {
-        if(userId == null || userId == "") return true;
+        if(userId == null || userId == ""){
+            return true;
+        }
         String id = db.userDao().findUserById(userId);
         System.out.println("found: " + id);
         return (id != null);
