@@ -24,6 +24,8 @@ import org.json.JSONObject;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class createUser extends AppCompatActivity {
 
@@ -45,9 +47,11 @@ public class createUser extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("User already exists")
                 .setMessage("Users with this ID already exists, please choose another username");
-        new Thread (() -> {
-            AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
+        String id = ((EditText) findViewById(R.id.userIdInput)).getText().toString();
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "User").fallbackToDestructiveMigration().build();
 
+        //Get a boolean if user exist
+        CompletableFuture<Boolean> isUsed = new CompletableFuture<>().supplyAsync(() -> {
             //Find users from remote and insert
             JSONArray remoteUsers = remote.getEverythingFromRemote("users");
             List<String> ids = new ArrayList<>();
@@ -62,25 +66,25 @@ public class createUser extends AppCompatActivity {
             }
             //Delete removed users such a removed user can be created again
             db.userDao().removeAllNotInRemote(ids);
+            return isUsedId(id,db);
+        });
 
-            String id = ((EditText) findViewById(R.id.userIdInput)).getText().toString();
-            //Insert user if not used
-            if(!isUsedId(id,db)) {
+        //Try to insert if user not exist or show error, have to be in main thread due to alert can not be shown from thread
+        try {
+            if(!isUsed.get()) {
                 String name = ((EditText) findViewById(R.id.userNameInput)).getText().toString();
                 Log.d("User creation", "A user was created with id: " + id + " and name: " + name);
-                insertUser(new User(id,name, OffsetDateTime.now().toString()),db);
+                new Thread(() -> insertUser(new User(id,name, OffsetDateTime.now().toString()),db)).start();
                 //Insert userId to sessionHandler
                 sh.putString("user_id", id);
                 finish();
             }
             //Show error message if already used
-            else{
-                //((TextView) findViewById(R.id.userIdInvalid)).setTextColor(Color.rgb(255,0,0));
-                    builder.show();
-            }
-
-
-        }).start();
+            else
+                builder.show();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
