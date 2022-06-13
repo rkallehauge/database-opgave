@@ -79,7 +79,6 @@ public class textForm extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_textform, container, false);
     }
-    // closes modal
 
 
     @Override
