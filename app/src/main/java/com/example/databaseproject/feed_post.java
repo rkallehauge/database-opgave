@@ -114,7 +114,8 @@ public class feed_post extends Fragment {
 
         //Make comment button listener
         viewgroup.findViewById(R.id.postComment).setOnClickListener(
-                (View view) -> openCommentForm(viewgroup, post_id,commentContainer));
+                (View view) -> openCommentForm(viewgroup, post_id,commentContainer)
+        );
 
         // Comments open button listener
         ImageButton b = getView().findViewById(R.id.openComments);
@@ -126,6 +127,7 @@ public class feed_post extends Fragment {
                 }
                 //If not visible then make them visible
                 else{
+                    killComments(commentContainer);
                     updateComments(commentContainer,post_id);
                     args.putBoolean(STATE_COMMENTS, true);
                 }
