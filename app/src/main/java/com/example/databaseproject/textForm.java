@@ -148,6 +148,10 @@ public class textForm extends Fragment {
         Log.d("Post creation", "Post-button pressed");
 
         String input = ((EditText) getView().findViewById(R.id.userTextInput)).getText().toString();
+
+        //If input is empty it assumed as a mis click
+        if(input.equals("")) return;
+
         //If imagePath is not null it is a post and not comment
         if(imagePath != null)
             try {
