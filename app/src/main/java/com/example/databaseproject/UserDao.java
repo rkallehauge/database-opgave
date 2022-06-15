@@ -17,4 +17,7 @@ public interface UserDao {
     @Query("DELETE FROM User WHERE id NOT IN (:userIdsInRemote)")
     void removeAllNotInRemote(List<String> userIdsInRemote);
 
+    //Insert all given users
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    void insertAll(List<User> usersInRemote);
 }

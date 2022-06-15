@@ -6,13 +6,13 @@ import androidx.room.*;
 @Dao
 public interface PostDao {
 
-    // Insert all posts
+    // Insert post
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     long insert(Post post);
 
-    // Update post
-    @Update
-    void update(Post... posts);
+    // Insert all posts
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    void insertAll(List<Post> posts);
 
     // Select all Posts.
     @Query("SELECT * FROM Post ORDER BY stamp DESC")

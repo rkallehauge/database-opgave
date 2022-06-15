@@ -71,33 +71,37 @@ public class feed extends AppCompatActivity {
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),AppDatabase.class, "User").fallbackToDestructiveMigration().build();
         JSONArray remoteUsers = remote.getEverythingFromRemote("users");
         List<String> userIdsInRemote = new ArrayList<>();
+        List<User> usersInRemote = new ArrayList<>();
         for(int i = 0; i < remoteUsers.length(); i++) {
             try {
                 JSONObject entry = remoteUsers.getJSONObject(i);
-                db.userDao().insert(new User(entry.getString("id"), entry.getString("name"),entry.getString("stamp")));
+                usersInRemote.add(new User(entry.getString("id"), entry.getString("name"),entry.getString("stamp")));
                 userIdsInRemote.add(entry.getString("id"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-
+        //Remove all local users not in remote
         db.userDao().removeAllNotInRemote(userIdsInRemote);
+        //Add all remote users
+        db.userDao().insertAll(usersInRemote);
 
         JSONArray remotePosts = remote.getEverythingFromRemote("posts");
-        PostDao postdao = db.PostDao();
         List<Integer> postIdsInRemote = new ArrayList<>();
+        List<Post> postsInRemote = new ArrayList<>();
         for(int i = 0; i < remotePosts.length(); i++) {
             try {
                 JSONObject entry = remotePosts.getJSONObject(i);
-                postdao.insert(new Post(entry.getInt("id"),entry.getString("user_id"),entry.getString("content"),entry.getString("stamp")));
-                System.out.println(entry.getInt("id"));
+                postsInRemote.add(new Post(entry.getInt("id"),entry.getString("user_id"),entry.getString("content"),entry.getString("stamp")));
                 postIdsInRemote.add(entry.getInt("id"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         //Remove post in local DB which have been removed in remote
-        //postdao.removeAllNotInRemote(postIdsInRemote);
+        db.PostDao().removeAllNotInRemote(postIdsInRemote);
+        //Insert all posts in remote
+        db.PostDao().insertAll(postsInRemote);
 
         JSONArray remoteReactions = remote.getEverythingFromRemote("reactions");
         ReactionDao reactdao = db.ReactionDao();
@@ -111,7 +115,7 @@ public class feed extends AppCompatActivity {
         }
 
         new Thread(() -> {
-            List<Post> localPosts = postdao.getAll();
+            List<Post> localPosts = db.PostDao().getAll();
             for (Post post : localPosts)
                 makePostInFeed(post);
         }).start();

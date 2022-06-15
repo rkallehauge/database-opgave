@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Database Project</string>
-
     <string name="createTitle">Create user</string>
     <string name="createIdInput">User ID</string>
     <string name="createNameInput">Full name</string>
@@ -10,6 +9,5 @@
     <string name="postHint">Message to be posted</string>
     <string name="loading">Loading</string>
     <string name="placeholderText">Please input your message here</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="uploadImage">Upload Image</string>
 </resources>
