@@ -186,49 +186,38 @@ public class feed_post extends Fragment {
                 String tmp = content;
                 content = content.substring(0,199);
 
-
                 Button expandButton = getView().findViewById(R.id.postExpand);
                 expandButton.setVisibility(View.VISIBLE);
                 String finalContent = content;
+                contentText.setText(finalContent);
+                Log.d("Post init", "Post too large shortened version");
                 expandButton.setOnClickListener((View view) -> {
 
                     if(contentText.getText().length()>200){
-                        expandButton.setText("Expand post");
-                        contentText.setText(args.getString(finalContent));
-                        return;
-                    } else{
-                        expandButton.setText("Minimize post");
-                    }
+                        expandButton.setText(R.string.ExpandButton);
+                        contentText.setText(finalContent);
+                    } else {
+                        expandButton.setText(R.string.MinimizeButton);
 
-
-                    // Warn user if content is over 400 characters long
-                    if(tmp.length() > 400){
-                        // Shamelessly stolen from stackoverflow
-                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                switch (which){
-                                    case DialogInterface.BUTTON_POSITIVE:
-                                        contentText.setText(tmp);
-                                        break;
-
+                        // Warn user if content is over 400 characters long
+                        if (tmp.length() > 400) {
+                            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                                if (which == DialogInterface.BUTTON_POSITIVE) {
+                                    contentText.setText(tmp);
                                 }
-                            }
-                        };
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                        builder.setMessage("The message you are trying to expand is over 400 characters, do you wish to continue?")
-                                .setPositiveButton("Yes", dialogClickListener)
-                                .setNegativeButton("No", dialogClickListener).show();
+                            };
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                            builder.setMessage("The message you are trying to expand is over 400 characters, do you wish to continue?")
+                                    .setPositiveButton("Yes", dialogClickListener)
+                                    .setNegativeButton("No", dialogClickListener).show();
 
-                    } else{
-                        contentText.setText(tmp);
+                        } else contentText.setText(tmp);
                     }
                 });
 
 
             }
-
-            contentText.setText(content);
+            else contentText.setText(content);
 
             TextView stampText = getView().findViewById(R.id.postStamp);
             stampText.setText(stamp);

@@ -116,7 +116,6 @@ public class createUser extends AppCompatActivity {
             return true;
         }
         String id = db.userDao().findUserById(userId);
-        System.out.println("found: " + id);
         return (id != null);
     }
 }
