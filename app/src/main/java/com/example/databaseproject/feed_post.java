@@ -180,6 +180,54 @@ public class feed_post extends Fragment {
             uidText.setText(uid);
 
             TextView contentText = getView().findViewById(R.id.postContent);
+
+            // BugFix for other students implementing image sharing, for god knows what reason, in post.content
+            if(content.length() > 200){
+                String tmp = content;
+                content = content.substring(0,199);
+
+
+                Button expandButton = getView().findViewById(R.id.postExpand);
+                expandButton.setVisibility(View.VISIBLE);
+                String finalContent = content;
+                expandButton.setOnClickListener((View view) -> {
+
+                    if(contentText.getText().length()>200){
+                        expandButton.setText("Expand post");
+                        contentText.setText(args.getString(finalContent));
+                        return;
+                    } else{
+                        expandButton.setText("Minimize post");
+                    }
+
+
+                    // Warn user if content is over 400 characters long
+                    if(tmp.length() > 400){
+                        // Shamelessly stolen from stackoverflow
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which){
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        contentText.setText(tmp);
+                                        break;
+
+                                }
+                            }
+                        };
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setMessage("The message you are trying to expand is over 400 characters, do you wish to continue?")
+                                .setPositiveButton("Yes", dialogClickListener)
+                                .setNegativeButton("No", dialogClickListener).show();
+
+                    } else{
+                        contentText.setText(tmp);
+                    }
+                });
+
+
+            }
+
             contentText.setText(content);
 
             TextView stampText = getView().findViewById(R.id.postStamp);

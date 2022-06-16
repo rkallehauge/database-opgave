@@ -56,6 +56,14 @@
                 android:layout_margin="8dp"
                 android:layout_gravity="center_horizontal"
             />
+            <Button
+                android:id="@+id/postExpand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Expand post"
+                android:visibility="gone"
+            />
 
             <ImageView
                 android:id="@+id/postImage"
